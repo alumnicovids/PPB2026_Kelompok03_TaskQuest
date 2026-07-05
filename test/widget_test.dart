@@ -1,15 +1,100 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:taskquest/main.dart';
+import 'package:taskquest/domain/repositories/task_repository.dart';
+import 'package:taskquest/domain/repositories/auth_repository.dart';
+import 'package:taskquest/domain/repositories/character_repository.dart';
+import 'package:taskquest/domain/repositories/location_repository.dart';
+import 'package:taskquest/data/datasources/remote/quotes_datasource.dart';
+import 'package:taskquest/presentation/providers/auth_provider.dart';
+import 'package:taskquest/presentation/providers/task_provider.dart';
+import 'package:taskquest/presentation/providers/character_provider.dart';
+import 'package:taskquest/domain/usecases/calculate_xp_use_case.dart';
+import 'package:taskquest/domain/usecases/level_up_use_case.dart';
+import 'package:taskquest/domain/entities/task.dart';
+import 'package:taskquest/domain/entities/character.dart';
+import 'package:taskquest/domain/entities/study_location.dart';
+import 'package:http/http.dart' as http;
+
+class FakeTaskRepository implements TaskRepository {
+  @override
+  Future<void> createTask(Task task) async {}
+  @override
+  Future<List<Task>> getTasks(String userId) async => [];
+  @override
+  Future<Task?> getTaskById(String taskId) async => null;
+  @override
+  Future<void> updateTask(Task task) async {}
+  @override
+  Future<void> deleteTask(String taskId) async {}
+  @override
+  Future<void> syncTasks(String userId) async {}
+}
+
+class FakeAuthRepository implements AuthRepository {
+  @override
+  Future<bool> login(String username, String password) async => false;
+  @override
+  Future<bool> register(String username, String email, String password) async => false;
+  @override
+  Future<void> logout() async {}
+  @override
+  bool isLoggedIn() => false;
+  @override
+  String? getUserId() => null;
+  @override
+  String? getUsername() => null;
+}
+
+class FakeCharacterRepository implements CharacterRepository {
+  @override
+  Future<Character?> getCharacter(String userId) async => null;
+  @override
+  Future<void> saveCharacter(Character character) async {}
+}
+
+class FakeLocationRepository implements LocationRepository {
+  @override
+  Future<void> saveLocation(StudyLocation location) async {}
+  @override
+  Future<List<StudyLocation>> getLocations(String userId) async => [];
+  @override
+  Future<void> deleteLocation(String id) async {}
+}
 
 void main() {
-  testWidgets('App renders login screen initially', (
-    WidgetTester tester,
-  ) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('App renders login screen initially', (WidgetTester tester) async {
+    final taskRepo = FakeTaskRepository();
+    final authRepo = FakeAuthRepository();
+    final charRepo = FakeCharacterRepository();
+    final locRepo = FakeLocationRepository();
+    final quotesDS = QuotesDatasource(http.Client());
+
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          Provider<TaskRepository>.value(value: taskRepo),
+          Provider<AuthRepository>.value(value: authRepo),
+          Provider<CharacterRepository>.value(value: charRepo),
+          Provider<LocationRepository>.value(value: locRepo),
+          Provider<QuotesDatasource>.value(value: quotesDS),
+          ChangeNotifierProvider(create: (_) => AuthProvider(authRepo)),
+          ChangeNotifierProvider(create: (_) => TaskProvider(taskRepo)),
+          ChangeNotifierProvider(
+            create: (_) => CharacterProvider(
+              CalculateXpUseCase(),
+              LevelUpUseCase(),
+              charRepo,
+            ),
+          ),
+        ],
+        child: const MyApp(),
+      ),
+    );
+
     await tester.pumpAndSettle();
 
-    // Verify that the login screen elements are shown.
     expect(find.text('TaskQuest'), findsOneWidget);
     expect(find.text('Login'), findsOneWidget);
   });

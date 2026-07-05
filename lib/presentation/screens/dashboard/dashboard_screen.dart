@@ -1,119 +1,295 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../../data/datasources/remote/quotes_datasource.dart';
+import '../../providers/auth_provider.dart';
+import '../../providers/character_provider.dart';
+import '../../providers/task_provider.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
 
   @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  Map<String, String>? _quote;
+  bool _isLoadingQuote = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+    _fetchQuote();
+  }
+
+  void _loadData() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final userId = authProvider.userId;
+      if (userId != null) {
+        Provider.of<CharacterProvider>(context, listen: false).loadCharacter(userId);
+        Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
+      }
+    });
+  }
+
+  Future<void> _fetchQuote() async {
+    if (!mounted) return;
+    setState(() {
+      _isLoadingQuote = true;
+    });
+    try {
+      final quotesDatasource = Provider.of<QuotesDatasource>(context, listen: false);
+      final quote = await quotesDatasource.getRandomQuote();
+      if (mounted) {
+        setState(() {
+          _quote = quote;
+          _isLoadingQuote = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoadingQuote = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _syncData() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userId = authProvider.userId;
+    if (userId != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Syncing with remote database...')),
+      );
+      await Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
+      if (mounted) {
+        await Provider.of<CharacterProvider>(context, listen: false).loadCharacter(userId);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Data synced successfully!')),
+          );
+        }
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
+    final characterProvider = Provider.of<CharacterProvider>(context);
+    final taskProvider = Provider.of<TaskProvider>(context);
+
+    final character = characterProvider.character;
+    final username = authProvider.username ?? 'Hero';
+    final tasks = taskProvider.tasks;
+
+    final activeQuests = tasks.where((t) => t.status != 'completed').length;
+    final completedQuests = tasks.where((t) => t.status == 'completed').length;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Dashboard'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.sync_rounded),
+            onPressed: _syncData,
+            tooltip: 'Sync data',
+          ),
+          IconButton(
             icon: const Icon(Icons.person),
             onPressed: () => context.go('/profile'),
+            tooltip: 'Profile',
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Character Card
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  children: [
-                    const CircleAvatar(
-                      radius: 40,
-                      backgroundColor: Color(0xFFE0A98C),
-                      child: Icon(
-                        Icons.shield_rounded,
-                        size: 40,
-                        color: Color(0xFFC15F3C),
-                      ),
+      body: RefreshIndicator(
+        onRefresh: () async {
+          _loadData();
+          await _fetchQuote();
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Welcome Text
+              Text(
+                'Welcome back, $username!',
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                      fontSize: 24,
+                      color: const Color(0xFFC15F3C),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Knight Hero',
-                            style: Theme.of(context).textTheme.displaySmall,
+              ),
+              const SizedBox(height: 16),
+
+              // Character Card
+              if (characterProvider.isLoading && character == null)
+                const Card(
+                  child: Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(child: CircularProgressIndicator()),
+                  ),
+                )
+              else if (character != null)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 40,
+                          backgroundColor: const Color(0xFFE0A98C),
+                          child: Icon(
+                            character.classType.toLowerCase() == 'mage'
+                                ? Icons.auto_stories_rounded
+                                : character.classType.toLowerCase() == 'archer'
+                                    ? Icons.gps_fixed_rounded
+                                    : Icons.shield_rounded,
+                            size: 40,
+                            color: const Color(0xFFC15F3C),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Level 1 Warrior',
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(color: const Color(0xFF6B6862)),
-                          ),
-                          const SizedBox(height: 8),
-                          // XP Progress Bar
-                          Row(
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Expanded(
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(4),
-                                  child: const LinearProgressIndicator(
-                                    value: 0.35,
-                                    backgroundColor: Color(0xFFEDE9DE),
-                                    valueColor: AlwaysStoppedAnimation<Color>(
-                                      Color(0xFFC15F3C),
-                                    ),
-                                    minHeight: 8,
-                                  ),
-                                ),
+                              Text(
+                                '${character.classType[0].toUpperCase()}${character.classType.substring(1)} Hero',
+                                style: Theme.of(context).textTheme.displaySmall,
                               ),
-                              const SizedBox(width: 8),
-                              const Text(
-                                '35 / 100 XP',
-                                style: TextStyle(fontSize: 12),
+                              const SizedBox(height: 4),
+                              Text(
+                                'Level ${character.level} (Stage ${character.appearanceStage})',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: const Color(0xFF6B6862),
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                              ),
+                              const SizedBox(height: 8),
+                              // XP Progress Bar
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: LinearProgressIndicator(
+                                        value: character.xpToNextLevel > 0
+                                            ? character.currentXp / character.xpToNextLevel
+                                            : 0.0,
+                                        backgroundColor: const Color(0xFFEDE9DE),
+                                        valueColor: const AlwaysStoppedAnimation<Color>(
+                                          Color(0xFFC15F3C),
+                                        ),
+                                        minHeight: 8,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    '${character.currentXp}/${character.xpToNextLevel} XP',
+                                    style: const TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  ],
+                  ),
+                ),
+              const SizedBox(height: 24),
+
+              // Quote of the Day
+              Card(
+                color: const Color(0xFFEDE9DE).withAlpha(120),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: _isLoadingQuote
+                      ? const Center(child: CircularProgressIndicator())
+                      : Column(
+                          children: [
+                            const Text(
+                              'QUOTE OF THE DAY',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFC15F3C),
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              _quote?['quote'] ?? 'Keep moving forward!',
+                              style: const TextStyle(
+                                fontStyle: FontStyle.italic,
+                                fontSize: 14,
+                                height: 1.4,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '- ${_quote?['author'] ?? 'Unknown'}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[700],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            // Quick Stats
-            Text(
-              'Your Quest Stats',
-              style: Theme.of(context).textTheme.displaySmall,
-            ),
-            const SizedBox(height: 12),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisSpacing: 12,
-              mainAxisSpacing: 12,
-              childAspectRatio: 1.5,
-              children: [
-                _buildStatCard(
-                  context,
-                  'Active Quests',
-                  '3',
-                  Icons.directions_run,
-                ),
-                _buildStatCard(context, 'Completed', '12', Icons.task_alt),
-              ],
-            ),
-            const SizedBox(height: 24),
-            // Call to Action
-            ElevatedButton.icon(
-              onPressed: () => context.go('/tasks'),
-              icon: const Icon(Icons.list_alt_rounded),
-              label: const Text('View Quest Board (Task List)'),
-            ),
-          ],
+              const SizedBox(height: 24),
+
+              // Quick Stats
+              Text(
+                'Your Quest Stats',
+                style: Theme.of(context).textTheme.displaySmall,
+              ),
+              const SizedBox(height: 12),
+              GridView.count(
+                crossAxisCount: 2,
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 1.5,
+                children: [
+                  _buildStatCard(
+                    context,
+                    'Active Quests',
+                    '$activeQuests',
+                    Icons.directions_run,
+                  ),
+                  _buildStatCard(
+                    context,
+                    'Completed',
+                    '$completedQuests',
+                    Icons.task_alt,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Call to Action
+              ElevatedButton.icon(
+                onPressed: () => context.go('/tasks'),
+                icon: const Icon(Icons.list_alt_rounded),
+                label: const Text('View Quest Board (Task List)'),
+              ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(

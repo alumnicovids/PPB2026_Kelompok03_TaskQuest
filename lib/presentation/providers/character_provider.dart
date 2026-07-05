@@ -2,17 +2,23 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../domain/entities/character.dart';
 import '../../domain/entities/task.dart';
+import '../../domain/repositories/character_repository.dart';
 import '../../domain/usecases/calculate_xp_use_case.dart';
 import '../../domain/usecases/level_up_use_case.dart';
 
 class CharacterProvider with ChangeNotifier {
   final CalculateXpUseCase _calculateXpUseCase;
   final LevelUpUseCase _levelUpUseCase;
+  final CharacterRepository _characterRepository;
 
   Character? _character;
   bool _isLoading = false;
 
-  CharacterProvider(this._calculateXpUseCase, this._levelUpUseCase);
+  CharacterProvider(
+    this._calculateXpUseCase,
+    this._levelUpUseCase,
+    this._characterRepository,
+  );
 
   Character? get character => _character;
   bool get isLoading => _isLoading;
@@ -29,6 +35,38 @@ class CharacterProvider with ChangeNotifier {
       updatedAt: DateTime.now(),
     );
     notifyListeners();
+  }
+
+  Future<void> loadCharacter(String userId) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final char = await _characterRepository.getCharacter(userId);
+      if (char != null) {
+        _character = char;
+      } else {
+        // Initialize new character for user
+        final newChar = Character(
+          id: 'char-$userId',
+          userId: userId,
+          classType: 'knight',
+          level: 1,
+          currentXp: 0,
+          xpToNextLevel: 100,
+          appearanceStage: 1,
+          updatedAt: DateTime.now(),
+        );
+        await _characterRepository.saveCharacter(newChar);
+        _character = newChar;
+      }
+    } catch (_) {
+      if (_character == null) {
+        loadMockCharacter(userId);
+      }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<Map<String, dynamic>> completeTask(
@@ -58,13 +96,17 @@ class CharacterProvider with ChangeNotifier {
 
     final xpToNext = (100 * pow(levelUpResult.newLevel, 1.3)).round();
 
-    _character = _character!.copyWith(
+    final updatedChar = _character!.copyWith(
       level: levelUpResult.newLevel,
       currentXp: levelUpResult.newXp,
       xpToNextLevel: xpToNext,
       appearanceStage: levelUpResult.newAppearanceStage,
       updatedAt: DateTime.now(),
     );
+
+    // Save changes using repository
+    await _characterRepository.saveCharacter(updatedChar);
+    _character = updatedChar;
 
     _isLoading = false;
     notifyListeners();
