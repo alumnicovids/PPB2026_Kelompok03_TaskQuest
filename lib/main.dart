@@ -1,8 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/theme/app_theme.dart';
 import 'core/constants/app_constants.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  try {
+    if (AppConstants.supabaseUrl != 'YOUR_SUPABASE_URL' &&
+        AppConstants.supabaseUrl.startsWith('http')) {
+      await Supabase.initialize(
+        url: AppConstants.supabaseUrl,
+        publishableKey: AppConstants.supabasePublishableKey,
+      );
+    } else {
+      debugPrint(
+        'Supabase Warning: Please configure YOUR_SUPABASE_URL and YOUR_SUPABASE_PUBLISHABLE_KEY in AppConstants',
+      );
+    }
+  } catch (e) {
+    debugPrint('Supabase Initialization Error: $e');
+  }
+
   runApp(const MyApp());
 }
 
