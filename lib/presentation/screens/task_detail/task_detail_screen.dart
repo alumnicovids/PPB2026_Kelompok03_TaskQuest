@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import '../../../data/datasources/local/camera_datasource.dart';
 import '../../../domain/entities/task.dart';
 import '../../providers/character_provider.dart';
 import '../../providers/task_provider.dart';
@@ -18,33 +19,33 @@ class TaskDetailScreen extends StatefulWidget {
 
 class _TaskDetailScreenState extends State<TaskDetailScreen> {
   String? _localPhotoPath;
-  final ImagePicker _picker = ImagePicker();
   bool _isProcessing = false;
+  late CameraDatasource _cameraDatasource;
+
+  @override
+  void initState() {
+    super.initState();
+    _cameraDatasource = CameraDatasource(ImagePicker());
+  }
 
   Future<void> _capturePhoto() async {
-    try {
-      final XFile? photo = await _picker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 70,
-      );
-      if (photo != null) {
-        setState(() {
-          _localPhotoPath = photo.path;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error capturing photo: $e')),
-        );
-      }
+    final path = await _cameraDatasource.captureTaskProof();
+    if (path != null) {
+      setState(() => _localPhotoPath = path);
+    }
+  }
+
+  Future<void> _selectFromGallery() async {
+    final path = await _cameraDatasource.selectTaskProofFromGallery();
+    if (path != null) {
+      setState(() => _localPhotoPath = path);
     }
   }
 
   Future<void> _completeQuest(Task task) async {
     if (task.proofPhotoPath == null && _localPhotoPath == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please capture a photo proof first!')),
+        const SnackBar(content: Text('Please capture or select a photo proof first!')),
       );
       return;
     }
@@ -261,8 +262,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   const SizedBox(height: 12),
                   _buildDetailRow(
                     context,
-                    'Priority / Reward',
-                    '${task.priority.toUpperCase()} (+${task.xpReward} XP)',
+                    'Priority',
+                    task.priority.toUpperCase(),
                     Icons.flag,
                     color: priorityColor,
                   ),
@@ -281,18 +282,26 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     isCompleted ? Icons.check_circle : Icons.hourglass_empty,
                     color: isCompleted ? const Color(0xFF4E7A51) : null,
                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Quest Description',
-                    style: Theme.of(context).textTheme.displaySmall,
+                  const SizedBox(height: 12),
+                  _buildDetailRow(
+                    context,
+                    'XP Reward',
+                    '${task.xpReward} XP',
+                    Icons.bolt,
+                    color: const Color(0xFFC48A2D),
                   ),
-                  const SizedBox(height: 8),
-                  Text(
-                    task.description?.isNotEmpty == true
-                        ? task.description!
-                        : 'No description provided.',
-                    style: Theme.of(context).textTheme.bodyLarge,
-                  ),
+                  if (task.description != null && task.description!.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    Text(
+                      'Description',
+                      style: Theme.of(context).textTheme.displaySmall,
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      task.description!,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ],
                   const SizedBox(height: 32),
                   // Proof of completion
                   Text(
@@ -332,21 +341,54 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   ),
                   const SizedBox(height: 24),
                   if (!isCompleted) ...[
-                    ElevatedButton.icon(
-                      onPressed: _isProcessing ? null : _capturePhoto,
-                      icon: const Icon(Icons.camera_alt),
-                      label: Text(displayPhotoPath != null ? 'Retake Photo Proof' : 'Capture Photo Proof'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6B6862),
-                      ),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _capturePhoto,
+                            icon: const Icon(Icons.camera_alt),
+                            label: const Text('Camera'),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: OutlinedButton.icon(
+                            onPressed: _selectFromGallery,
+                            icon: const Icon(Icons.photo_library),
+                            label: const Text('Gallery'),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 16),
                     ElevatedButton.icon(
                       onPressed: _isProcessing ? null : () => _completeQuest(task),
                       icon: const Icon(Icons.check_circle),
                       label: const Text('Complete Quest'),
                     ),
-                  ],
+                  ] else
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF4E7A51).withAlpha(30),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: const Color(0xFF4E7A51)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.check_circle, color: Color(0xFF4E7A51)),
+                          SizedBox(width: 8),
+                          Text(
+                            'Quest Completed!',
+                            style: TextStyle(
+                              color: Color(0xFF4E7A51),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -371,9 +413,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             color: Color(0xFF6B6862),
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(color: color, fontWeight: FontWeight.w500),
+        Flexible(
+          child: Text(
+            value,
+            style: TextStyle(color: color, fontWeight: FontWeight.w500),
+          ),
         ),
       ],
     );

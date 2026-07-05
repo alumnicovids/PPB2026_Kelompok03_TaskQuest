@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/utils/gyroscope_service.dart';
 import '../../../data/datasources/remote/quotes_datasource.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/character_provider.dart';
 import '../../providers/task_provider.dart';
+import '../../widgets/level_up_animation.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -16,12 +18,20 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, String>? _quote;
   bool _isLoadingQuote = true;
+  late GyroscopeService _gyroscopeService;
+  bool _showLevelUpOverlay = false;
+  int _levelUpLevel = 1;
+  int _xpGained = 0;
+  final GlobalKey<LevelUpAnimationWidgetState> _animKey = GlobalKey();
 
   @override
   void initState() {
     super.initState();
     _loadData();
     _fetchQuote();
+    _gyroscopeService = GyroscopeService();
+    _gyroscopeService.startListening();
+    _gyroscopeService.addListener(_onGyroUpdate);
   }
 
   void _loadData() {
@@ -58,6 +68,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
     }
   }
 
+  void _onGyroUpdate() {
+    if (_showLevelUpOverlay) {
+      _animKey.currentState?.applyGyroTilt(
+        _gyroscopeService.x,
+        _gyroscopeService.y,
+      );
+    }
+  }
+
+  void _triggerLevelUpOverlay(int newLevel, int xp) {
+    setState(() {
+      _showLevelUpOverlay = true;
+      _levelUpLevel = newLevel;
+      _xpGained = xp;
+    });
+  }
+
   Future<void> _syncData() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.userId;
@@ -75,6 +102,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
         }
       }
     }
+  }
+
+  @override
+  void dispose() {
+    _gyroscopeService.removeListener(_onGyroUpdate);
+    _gyroscopeService.dispose();
+    super.dispose();
   }
 
   @override
@@ -106,191 +140,257 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: RefreshIndicator(
-        onRefresh: () async {
-          _loadData();
-          await _fetchQuote();
-        },
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              // Welcome Text
-              Text(
-                'Welcome back, $username!',
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      fontSize: 24,
-                      color: const Color(0xFFC15F3C),
-                    ),
-              ),
-              const SizedBox(height: 16),
-
-              // Character Card
-              if (characterProvider.isLoading && character == null)
-                const Card(
-                  child: Padding(
-                    padding: EdgeInsets.all(32.0),
-                    child: Center(child: CircularProgressIndicator()),
-                  ),
-                )
-              else if (character != null)
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        CircleAvatar(
-                          radius: 40,
-                          backgroundColor: const Color(0xFFE0A98C),
-                          child: Icon(
-                            character.classType.toLowerCase() == 'mage'
-                                ? Icons.auto_stories_rounded
-                                : character.classType.toLowerCase() == 'archer'
-                                    ? Icons.gps_fixed_rounded
-                                    : Icons.shield_rounded,
-                            size: 40,
-                            color: const Color(0xFFC15F3C),
-                          ),
+      body: Stack(
+        children: [
+          RefreshIndicator(
+            onRefresh: () async {
+              _loadData();
+              await _fetchQuote();
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Welcome Text
+                  Text(
+                    'Welcome back, $username!',
+                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                          fontSize: 24,
+                          color: const Color(0xFFC15F3C),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${character.classType[0].toUpperCase()}${character.classType.substring(1)} Hero',
-                                style: Theme.of(context).textTheme.displaySmall,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Character Card
+                  if (characterProvider.isLoading && character == null)
+                    const Card(
+                      child: Padding(
+                        padding: EdgeInsets.all(32.0),
+                        child: Center(child: CircularProgressIndicator()),
+                      ),
+                    )
+                  else if (character != null)
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Row(
+                          children: [
+                            CircleAvatar(
+                              radius: 40,
+                              backgroundColor: const Color(0xFFE0A98C),
+                              child: Icon(
+                                character.classType.toLowerCase() == 'mage'
+                                    ? Icons.auto_stories_rounded
+                                    : character.classType.toLowerCase() == 'archer'
+                                        ? Icons.gps_fixed_rounded
+                                        : Icons.shield_rounded,
+                                size: 40,
+                                color: const Color(0xFFC15F3C),
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                'Level ${character.level} (Stage ${character.appearanceStage})',
-                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: const Color(0xFF6B6862),
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                              const SizedBox(height: 8),
-                              // XP Progress Bar
-                              Row(
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Expanded(
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(4),
-                                      child: LinearProgressIndicator(
-                                        value: character.xpToNextLevel > 0
-                                            ? character.currentXp / character.xpToNextLevel
-                                            : 0.0,
-                                        backgroundColor: const Color(0xFFEDE9DE),
-                                        valueColor: const AlwaysStoppedAnimation<Color>(
-                                          Color(0xFFC15F3C),
-                                        ),
-                                        minHeight: 8,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
                                   Text(
-                                    '${character.currentXp}/${character.xpToNextLevel} XP',
+                                    '${character.classType[0].toUpperCase()}${character.classType.substring(1)} Hero',
+                                    style: Theme.of(context).textTheme.displaySmall,
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Level ${character.level} (Stage ${character.appearanceStage})',
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                          color: const Color(0xFF6B6862),
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  // XP Progress Bar
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(4),
+                                          child: LinearProgressIndicator(
+                                            value: character.xpToNextLevel > 0
+                                                ? character.currentXp / character.xpToNextLevel
+                                                : 0.0,
+                                            backgroundColor: const Color(0xFFEDE9DE),
+                                            valueColor: const AlwaysStoppedAnimation<Color>(
+                                              Color(0xFFC15F3C),
+                                            ),
+                                            minHeight: 8,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        '${character.currentXp}/${character.xpToNextLevel} XP',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 12),
+
+                  // Gyroscope live indicator
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: ListenableBuilder(
+                        listenable: _gyroscopeService,
+                        builder: (context, _) {
+                          return Row(
+                            children: [
+                              const Icon(
+                                Icons.screen_rotation,
+                                color: Color(0xFFC15F3C),
+                              ),
+                              const SizedBox(width: 12),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Gyroscope Active',
+                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  Text(
+                                    'x: ${_gyroscopeService.x.toStringAsFixed(2)}  '
+                                    'y: ${_gyroscopeService.y.toStringAsFixed(2)}  '
+                                    'z: ${_gyroscopeService.z.toStringAsFixed(2)}',
                                     style: const TextStyle(
                                       fontSize: 12,
-                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF6B6862),
                                     ),
                                   ),
                                 ],
                               ),
                             ],
-                          ),
-                        ),
-                      ],
+                          );
+                        },
+                      ),
                     ),
                   ),
-                ),
-              const SizedBox(height: 24),
+                  const SizedBox(height: 16),
 
-              // Quote of the Day
-              Card(
-                color: const Color(0xFFEDE9DE).withAlpha(120),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: _isLoadingQuote
-                      ? const Center(child: CircularProgressIndicator())
-                      : Column(
-                          children: [
-                            const Text(
-                              'QUOTE OF THE DAY',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFFC15F3C),
-                                letterSpacing: 1.5,
-                              ),
+                  // Quote of the Day
+                  Card(
+                    color: const Color(0xFFEDE9DE).withAlpha(120),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: _isLoadingQuote
+                          ? const Center(child: CircularProgressIndicator())
+                          : Column(
+                              children: [
+                                const Text(
+                                  'QUOTE OF THE DAY',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFFC15F3C),
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  _quote?['quote'] ?? 'Keep moving forward!',
+                                  style: const TextStyle(
+                                    fontStyle: FontStyle.italic,
+                                    fontSize: 14,
+                                    height: 1.4,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '- ${_quote?['author'] ?? 'Unknown'}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[700],
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(height: 12),
-                            Text(
-                              _quote?['quote'] ?? 'Keep moving forward!',
-                              style: const TextStyle(
-                                fontStyle: FontStyle.italic,
-                                fontSize: 14,
-                                height: 1.4,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              '- ${_quote?['author'] ?? 'Unknown'}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey[700],
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Quick Stats
-              Text(
-                'Your Quest Stats',
-                style: Theme.of(context).textTheme.displaySmall,
-              ),
-              const SizedBox(height: 12),
-              GridView.count(
-                crossAxisCount: 2,
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.5,
-                children: [
-                  _buildStatCard(
-                    context,
-                    'Active Quests',
-                    '$activeQuests',
-                    Icons.directions_run,
+                    ),
                   ),
-                  _buildStatCard(
-                    context,
-                    'Completed',
-                    '$completedQuests',
-                    Icons.task_alt,
+                  const SizedBox(height: 24),
+
+                  // Quick Stats
+                  Text(
+                    'Your Quest Stats',
+                    style: Theme.of(context).textTheme.displaySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: 1.5,
+                    children: [
+                      _buildStatCard(
+                        context,
+                        'Active Quests',
+                        '$activeQuests',
+                        Icons.directions_run,
+                      ),
+                      _buildStatCard(
+                        context,
+                        'Completed',
+                        '$completedQuests',
+                        Icons.task_alt,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Simulate Level Up (if they want to test the overlay)
+                  ElevatedButton.icon(
+                    onPressed: () => _triggerLevelUpOverlay((character?.level ?? 1) + 1, 35),
+                    icon: const Icon(Icons.auto_awesome),
+                    label: const Text('Simulate Level Up!'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF4E7A51),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Call to Action
+                  ElevatedButton.icon(
+                    onPressed: () => context.go('/tasks'),
+                    icon: const Icon(Icons.list_alt_rounded),
+                    label: const Text('View Quest Board (Task List)'),
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-
-              // Call to Action
-              ElevatedButton.icon(
-                onPressed: () => context.go('/tasks'),
-                icon: const Icon(Icons.list_alt_rounded),
-                label: const Text('View Quest Board (Task List)'),
-              ),
-            ],
+            ),
           ),
-        ),
+          if (_showLevelUpOverlay)
+            Positioned.fill(
+              child: LevelUpAnimationWidget(
+                key: _animKey,
+                newLevel: _levelUpLevel,
+                xpGained: _xpGained,
+                onAnimationEnd: () {
+                  setState(() => _showLevelUpOverlay = false);
+                },
+              ),
+            ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
@@ -308,11 +408,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
         onTap: (index) {
-          if (index == 1) {
-            context.go('/tasks');
-          } else if (index == 2) {
-            context.go('/profile');
-          }
+          if (index == 1) context.go('/tasks');
+          if (index == 2) context.go('/profile');
         },
       ),
     );
