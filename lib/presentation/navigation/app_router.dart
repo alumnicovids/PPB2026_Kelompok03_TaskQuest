@@ -4,6 +4,8 @@ import '../screens/dashboard/dashboard_screen.dart';
 import '../screens/task_list/task_list_screen.dart';
 import '../screens/task_detail/task_detail_screen.dart';
 import '../screens/profile/profile_screen.dart';
+import '../screens/level_up/level_up_screen.dart';
+import '../screens/locations/locations_map_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -28,6 +30,14 @@ class AppRouter {
       GoRoute(
         path: '/profile',
         builder: (context, state) => const ProfileScreen(),
+      ),
+      GoRoute(
+        path: '/level-up',
+        builder: (context, state) => const LevelUpScreen(),
+      ),
+      GoRoute(
+        path: '/locations',
+        builder: (context, state) => const LocationsMapScreen(),
       ),
     ],
   );
