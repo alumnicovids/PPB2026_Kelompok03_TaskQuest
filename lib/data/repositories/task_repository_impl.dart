@@ -34,8 +34,10 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Future<List<Task>> getTasks(String userId) async {
-    // Return offline-first local tasks
-    return await _sqliteTaskDatasource.getTasks(userId);
+    // Cast to List<Task> explicitly so the runtime list type is List<Task>,
+    // not List<TaskModel> — prevents type errors on subsequent inserts.
+    final models = await _sqliteTaskDatasource.getTasks(userId);
+    return List<Task>.from(models);
   }
 
   @override
@@ -90,13 +92,15 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<List<Task>> getAllTasks() async {
     final rawTasks = await _supabaseRemoteDatasource.getAllTasks();
-    return rawTasks.map((map) => TaskModel.fromMap(map)).toList();
+    // Explicitly type as <Task> so the runtime list is List<Task>,
+    // not List<TaskModel> — prevents type errors when inserting Task objects.
+    return rawTasks.map<Task>((map) => TaskModel.fromMap(map)).toList();
   }
 
   @override
   Future<List<Task>> getSubmittedTasks() async {
     final rawTasks = await _supabaseRemoteDatasource.getSubmittedTasks();
-    return rawTasks.map((map) => TaskModel.fromMap(map)).toList();
+    return rawTasks.map<Task>((map) => TaskModel.fromMap(map)).toList();
   }
 
   @override
