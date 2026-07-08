@@ -31,6 +31,23 @@ class SupabaseRemoteDatasource {
     await _supabaseClient.from('users').update(userData).eq('id', id);
   }
 
+  Future<List<Map<String, dynamic>>> getAllUsers() async {
+    final response = await _supabaseClient
+        .from('users')
+        .select()
+        .order('username');
+    return List<Map<String, dynamic>>.from(response);
+  }
+
+  Future<List<Map<String, dynamic>>> getUsersByRole(String role) async {
+    final response = await _supabaseClient
+        .from('users')
+        .select()
+        .eq('role', role)
+        .order('username');
+    return List<Map<String, dynamic>>.from(response);
+  }
+
   // === Tasks CRUD ===
   Future<List<Map<String, dynamic>>> getTasks(String userId) async {
     final response = await _supabaseClient
@@ -49,6 +66,24 @@ class SupabaseRemoteDatasource {
     await _supabaseClient.from('tasks').delete().eq('id', taskId);
   }
 
+  Future<List<Map<String, dynamic>>> getSubmittedTasks() async {
+    final response = await _supabaseClient
+        .from('tasks')
+        .select('*, users(username)')
+        .eq('status', 'submitted')
+        .order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(response);
+  }
+
+  Future<void> updateTaskStatus(
+    String taskId,
+    String status,
+    String? completedAt,
+  ) async {
+    final data = {'status': status, 'completed_at': completedAt};
+    await _supabaseClient.from('tasks').update(data).eq('id', taskId);
+  }
+
   // === Characters CRUD ===
   Future<Map<String, dynamic>?> getCharacterByUserId(String userId) async {
     return await _supabaseClient
@@ -60,6 +95,11 @@ class SupabaseRemoteDatasource {
 
   Future<void> upsertCharacter(Map<String, dynamic> characterData) async {
     await _supabaseClient.from('characters').upsert(characterData);
+  }
+
+  Future<List<Map<String, dynamic>>> getAllCharacters() async {
+    final response = await _supabaseClient.from('characters').select();
+    return List<Map<String, dynamic>>.from(response);
   }
 
   // === XP Logs CRUD ===

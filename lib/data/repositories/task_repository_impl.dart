@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'package:uuid/uuid.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/repositories/task_repository.dart';
+import '../../domain/usecases/level_up_use_case.dart';
 import '../datasources/local/sqlite_task_datasource.dart';
 import '../datasources/remote/supabase_remote_datasource.dart';
 import '../models/task_model.dart';
@@ -82,6 +84,72 @@ class TaskRepositoryImpl implements TaskRepository {
       final remoteTask = TaskModel.fromMap(data).copyWith(isSynced: true);
       await _sqliteTaskDatasource.insertTask(TaskModel.fromEntity(remoteTask));
     }
+  }
+
+  @override
+  Future<List<Task>> getSubmittedTasks() async {
+    final rawTasks = await _supabaseRemoteDatasource.getSubmittedTasks();
+    return rawTasks.map((map) => TaskModel.fromMap(map)).toList();
+  }
+
+  @override
+  Future<void> approveTask(
+    String taskId,
+    String studentUserId,
+    int xpReward,
+  ) async {
+    // 1. Approve task status in remote DB
+    await _supabaseRemoteDatasource.updateTaskStatus(
+      taskId,
+      'completed',
+      DateTime.now().toIso8601String(),
+    );
+
+    // 2. Fetch student character and update level/XP
+    final charData = await _supabaseRemoteDatasource.getCharacterByUserId(
+      studentUserId,
+    );
+    if (charData != null) {
+      final currentLevel = charData['level'] as int? ?? 1;
+      final currentXp = charData['current_xp'] as int? ?? 0;
+
+      final levelUpResult = LevelUpUseCase().execute(
+        LevelUpParams(
+          currentLevel: currentLevel,
+          currentXp: currentXp,
+          xpGained: xpReward,
+        ),
+      );
+
+      final updatedChar = Map<String, dynamic>.from(charData);
+      updatedChar['level'] = levelUpResult.newLevel;
+      updatedChar['current_xp'] = levelUpResult.newXp;
+      updatedChar['appearance_stage'] = levelUpResult.newAppearanceStage;
+      updatedChar['updated_at'] = DateTime.now().toIso8601String();
+
+      await _supabaseRemoteDatasource.upsertCharacter(updatedChar);
+    }
+
+    // 3. Log XP gain
+    final xpLogId = const Uuid().v4();
+    final xpLogData = {
+      'id': xpLogId,
+      'user_id': studentUserId,
+      'task_id': taskId,
+      'xp_amount': xpReward,
+      'reason': 'task_completed',
+      'created_at': DateTime.now().toIso8601String(),
+    };
+    await _supabaseRemoteDatasource.insertXpLog(xpLogData);
+  }
+
+  @override
+  Future<void> rejectTask(String taskId) async {
+    await _supabaseRemoteDatasource.updateTaskStatus(
+      taskId,
+      'in_progress',
+      null,
+    );
   }
 
   Future<void> _syncSingleTaskToRemote(TaskModel taskModel) async {

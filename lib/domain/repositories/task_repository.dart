@@ -7,4 +7,7 @@ abstract class TaskRepository {
   Future<void> updateTask(Task task);
   Future<void> deleteTask(String taskId);
   Future<void> syncTasks(String userId);
+  Future<List<Task>> getSubmittedTasks();
+  Future<void> approveTask(String taskId, String studentUserId, int xpReward);
+  Future<void> rejectTask(String taskId);
 }
