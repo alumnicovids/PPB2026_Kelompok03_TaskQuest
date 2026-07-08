@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -8,6 +9,7 @@ class AuthProvider with ChangeNotifier {
   String? _userId;
   String? _username;
   String? _role;
+  List<UserEntity> _users = [];
 
   AuthProvider(this._authRepository) {
     checkSession();
@@ -18,6 +20,7 @@ class AuthProvider with ChangeNotifier {
   String? get userId => _userId;
   String? get username => _username;
   String? get role => _role;
+  List<UserEntity> get users => _users;
 
   void checkSession() {
     _isLoggedIn = _authRepository.isLoggedIn();
@@ -69,6 +72,58 @@ class AuthProvider with ChangeNotifier {
     try {
       await _authRepository.logout();
       checkSession();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadUsersByRole(String role) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _users = await _authRepository.getUsersByRole(role);
+    } catch (_) {
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadAllUsers() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _users = await _authRepository.getAllUsers();
+    } catch (_) {
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> changeUserRole(String userId, String role) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _authRepository.updateUserRole(userId, role);
+      final index = _users.indexWhere((u) => u.id == userId);
+      if (index != -1) {
+        _users[index] = _users[index].copyWith(role: role);
+      }
+    } catch (_) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> registerLecturer(String username, String email, String password) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      return await _authRepository.registerDosen(username, email, password);
     } finally {
       _isLoading = false;
       notifyListeners();
