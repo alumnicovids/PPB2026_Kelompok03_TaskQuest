@@ -146,12 +146,16 @@ class TaskProvider with ChangeNotifier {
     }
   }
 
-  Future<void> syncTasks(String userId) async {
+  Future<void> syncTasks(String userId, {String? role}) async {
     _isLoading = true;
     notifyListeners();
     try {
       await _taskRepository.syncTasks(userId);
-      _tasks = await _taskRepository.getTasks(userId);
+      if (role == 'mahasiswa') {
+        _tasks = await _taskRepository.getTasks(userId);
+      } else {
+        _tasks = await _taskRepository.getAllTasks();
+      }
     } catch (_) {
       // Ignore background sync errors
     } finally {

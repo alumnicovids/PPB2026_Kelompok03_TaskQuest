@@ -26,13 +26,20 @@ class _TaskListScreenState extends State<TaskListScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     final userId = authProvider.userId;
     if (userId != null) {
-      if (authProvider.role == 'mahasiswa') {
+      final role = authProvider.role;
+      if (role == 'mahasiswa') {
         Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
-        Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
+        Provider.of<TaskProvider>(
+          context,
+          listen: false,
+        ).syncTasks(userId, role: role);
       } else {
         Provider.of<TaskProvider>(context, listen: false).loadAllTasks();
         authProvider.loadUsersByRole('mahasiswa');
-        Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
+        Provider.of<TaskProvider>(
+          context,
+          listen: false,
+        ).syncTasks(userId, role: role);
       }
     }
   }

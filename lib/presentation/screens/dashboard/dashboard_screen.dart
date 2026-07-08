@@ -52,7 +52,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             listen: false,
           ).loadCharacter(userId);
           Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
-          Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
+          Provider.of<TaskProvider>(
+            context,
+            listen: false,
+          ).syncTasks(userId, role: role);
         } else if (role == 'dosen') {
           Provider.of<AuthProvider>(
             context,
@@ -62,7 +65,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
             context,
             listen: false,
           ).loadSubmittedTasks();
-          Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
+          Provider.of<TaskProvider>(
+            context,
+            listen: false,
+          ).syncTasks(userId, role: role);
         } else if (role == 'superadmin') {
           Provider.of<AuthProvider>(context, listen: false).loadAllUsers();
         }
@@ -132,7 +138,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         await Provider.of<TaskProvider>(
           context,
           listen: false,
-        ).syncTasks(userId);
+        ).syncTasks(userId, role: role);
         if (mounted) {
           await charProvider.loadCharacter(userId);
           final newLevel = charProvider.character?.level ?? 1;

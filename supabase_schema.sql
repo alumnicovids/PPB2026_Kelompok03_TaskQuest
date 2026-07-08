@@ -83,34 +83,16 @@ CREATE POLICY "Allow insert to users" ON public.users FOR INSERT WITH CHECK (tru
 -- Characters Policies
 CREATE POLICY "Allow users to view all characters (for Leaderboard)" ON public.characters FOR SELECT USING (true);
 DROP POLICY IF EXISTS "Allow users to manage own character" ON public.characters;
-CREATE POLICY "Allow users to manage own character" ON public.characters FOR ALL USING (
-    auth.uid() = user_id 
-    OR EXISTS (
-        SELECT 1 FROM public.users 
-        WHERE users.id = auth.uid() AND users.role IN ('dosen', 'superadmin')
-    )
-);
+CREATE POLICY "Allow users to manage own character" ON public.characters FOR ALL USING (true);
 
 -- Tasks Policies
 DROP POLICY IF EXISTS "Allow users to manage own tasks" ON public.tasks;
-CREATE POLICY "Allow users to manage own tasks" ON public.tasks FOR ALL USING (
-    auth.uid() = user_id 
-    OR EXISTS (
-        SELECT 1 FROM public.users 
-        WHERE users.id = auth.uid() AND users.role IN ('dosen', 'superadmin')
-    )
-);
+CREATE POLICY "Allow users to manage own tasks" ON public.tasks FOR ALL USING (true);
 
 -- XP Logs Policies
 CREATE POLICY "Allow users to view all XP logs" ON public.xp_logs FOR SELECT USING (true);
 DROP POLICY IF EXISTS "Allow users to insert own XP logs" ON public.xp_logs;
-CREATE POLICY "Allow users to insert own XP logs" ON public.xp_logs FOR INSERT WITH CHECK (
-    auth.uid() = user_id 
-    OR EXISTS (
-        SELECT 1 FROM public.users 
-        WHERE users.id = auth.uid() AND users.role IN ('dosen', 'superadmin')
-    )
-);
+CREATE POLICY "Allow users to insert own XP logs" ON public.xp_logs FOR ALL USING (true);
 
 -- Character Items Policies
 CREATE POLICY "Allow users to view character items" ON public.character_items FOR SELECT USING (true);
