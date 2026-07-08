@@ -8,6 +8,7 @@ class StudyLocationModel extends StudyLocation {
     required super.latitude,
     required super.longitude,
     required super.isFavorite,
+    required super.isSynced,
   });
 
   factory StudyLocationModel.fromMap(Map<String, dynamic> map) {
@@ -17,7 +18,12 @@ class StudyLocationModel extends StudyLocation {
       name: map['name'] as String,
       latitude: (map['latitude'] as num).toDouble(),
       longitude: (map['longitude'] as num).toDouble(),
-      isFavorite: (map['is_favorite'] as int) == 1,
+      isFavorite: map['is_favorite'] is bool
+          ? map['is_favorite'] as bool
+          : (map['is_favorite'] as int) == 1,
+      isSynced: map['is_synced'] != null
+          ? (map['is_synced'] as int) == 1
+          : false,
     );
   }
 
@@ -29,6 +35,18 @@ class StudyLocationModel extends StudyLocation {
       'latitude': latitude,
       'longitude': longitude,
       'is_favorite': isFavorite ? 1 : 0,
+      'is_synced': isSynced ? 1 : 0,
+    };
+  }
+
+  Map<String, dynamic> toSupabaseMap() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'name': name,
+      'latitude': latitude,
+      'longitude': longitude,
+      'is_favorite': isFavorite,
     };
   }
 
@@ -40,6 +58,7 @@ class StudyLocationModel extends StudyLocation {
       latitude: location.latitude,
       longitude: location.longitude,
       isFavorite: location.isFavorite,
+      isSynced: location.isSynced,
     );
   }
 }

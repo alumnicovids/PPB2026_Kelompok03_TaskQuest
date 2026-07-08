@@ -62,6 +62,8 @@ class FakeLocationRepository implements LocationRepository {
   Future<List<StudyLocation>> getLocations(String userId) async => [];
   @override
   Future<void> deleteLocation(String id) async {}
+  @override
+  Future<void> syncLocations(String userId) async {}
 }
 
 class FakeXpLogRepository implements XpLogRepository {

@@ -111,6 +111,11 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
       final userId = authProvider.userId;
       if (userId != null) {
         final locationRepo = Provider.of<LocationRepository>(context, listen: false);
+        try {
+          await locationRepo.syncLocations(userId);
+        } catch (_) {
+          // Offline-first: ignore sync failures on load
+        }
         final locs = await locationRepo.getLocations(userId);
         setState(() {
           _locations = locs;
@@ -201,6 +206,7 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
         latitude: point.latitude,
         longitude: point.longitude,
         isFavorite: isFavorite,
+        isSynced: false,
       );
 
       setState(() {

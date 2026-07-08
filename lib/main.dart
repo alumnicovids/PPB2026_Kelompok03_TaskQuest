@@ -85,6 +85,7 @@ void main() async {
 
   final locationRepository = LocationRepositoryImpl(
     sqliteLocationDatasource,
+    supabaseRemoteDatasource,
   );
 
   final xpLogRepository = XpLogRepositoryImpl(

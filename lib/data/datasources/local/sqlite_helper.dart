@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class SqliteHelper {
   static const String _databaseName = 'taskquest.db';
-  static const int _databaseVersion = 2;
+  static const int _databaseVersion = 3;
 
   // Table Names
   static const String tableTasks = 'tasks';
@@ -63,7 +63,8 @@ class SqliteHelper {
         name TEXT NOT NULL,
         latitude REAL NOT NULL,
         longitude REAL NOT NULL,
-        is_favorite INTEGER NOT NULL DEFAULT 0
+        is_favorite INTEGER NOT NULL DEFAULT 0,
+        is_synced INTEGER NOT NULL DEFAULT 0
       )
     ''');
 
@@ -84,6 +85,9 @@ class SqliteHelper {
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('ALTER TABLE $tableXpLogs ADD COLUMN is_synced INTEGER NOT NULL DEFAULT 0');
+    }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE $tableStudyLocations ADD COLUMN is_synced INTEGER NOT NULL DEFAULT 0');
     }
   }
 

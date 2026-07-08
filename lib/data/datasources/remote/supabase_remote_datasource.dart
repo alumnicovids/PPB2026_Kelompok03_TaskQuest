@@ -84,4 +84,21 @@ class SupabaseRemoteDatasource {
         .upload(fileName, file, fileOptions: const FileOptions(upsert: true));
     return _supabaseClient.storage.from('task-proofs').getPublicUrl(fileName);
   }
+
+  // === Study Locations CRUD ===
+  Future<List<Map<String, dynamic>>> getLocations(String userId) async {
+    final response = await _supabaseClient
+        .from('study_locations')
+        .select()
+        .eq('user_id', userId);
+    return List<Map<String, dynamic>>.from(response);
+  }
+
+  Future<void> upsertLocation(Map<String, dynamic> locationData) async {
+    await _supabaseClient.from('study_locations').upsert(locationData);
+  }
+
+  Future<void> deleteRemoteLocation(String id) async {
+    await _supabaseClient.from('study_locations').delete().eq('id', id);
+  }
 }

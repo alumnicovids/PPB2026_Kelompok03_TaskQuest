@@ -5,6 +5,7 @@ class StudyLocation {
   final double latitude;
   final double longitude;
   final bool isFavorite;
+  final bool isSynced;
 
   const StudyLocation({
     required this.id,
@@ -13,6 +14,7 @@ class StudyLocation {
     required this.latitude,
     required this.longitude,
     required this.isFavorite,
+    required this.isSynced,
   });
 
   StudyLocation copyWith({
@@ -22,6 +24,7 @@ class StudyLocation {
     double? latitude,
     double? longitude,
     bool? isFavorite,
+    bool? isSynced,
   }) {
     return StudyLocation(
       id: id ?? this.id,
@@ -30,6 +33,7 @@ class StudyLocation {
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
       isFavorite: isFavorite ?? this.isFavorite,
+      isSynced: isSynced ?? this.isSynced,
     );
   }
 }
