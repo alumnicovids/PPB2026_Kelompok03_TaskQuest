@@ -5,11 +5,13 @@ import '../../domain/repositories/task_repository.dart';
 class TaskProvider with ChangeNotifier {
   final TaskRepository _taskRepository;
   List<Task> _tasks = [];
+  List<Task> _submittedTasks = [];
   bool _isLoading = false;
 
   TaskProvider(this._taskRepository);
 
   List<Task> get tasks => _tasks;
+  List<Task> get submittedTasks => _submittedTasks;
   bool get isLoading => _isLoading;
 
   Future<void> loadTasks(String userId) async {
@@ -19,6 +21,19 @@ class TaskProvider with ChangeNotifier {
       _tasks = await _taskRepository.getTasks(userId);
     } catch (_) {
       // Offline-first: fallback to empty list or keep current tasks
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> loadSubmittedTasks() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _submittedTasks = await _taskRepository.getSubmittedTasks();
+    } catch (_) {
+      // Handle or ignore
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -62,6 +77,34 @@ class TaskProvider with ChangeNotifier {
     try {
       await _taskRepository.deleteTask(taskId);
       _tasks.removeWhere((t) => t.id == taskId);
+    } catch (_) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> approveQuest(String taskId, String studentUserId, int xpReward) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _taskRepository.approveTask(taskId, studentUserId, xpReward);
+      _submittedTasks.removeWhere((t) => t.id == taskId);
+    } catch (_) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> rejectQuest(String taskId) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _taskRepository.rejectTask(taskId);
+      _submittedTasks.removeWhere((t) => t.id == taskId);
     } catch (_) {
       rethrow;
     } finally {

@@ -7,6 +7,7 @@ class AuthProvider with ChangeNotifier {
   bool _isLoggedIn = false;
   String? _userId;
   String? _username;
+  String? _role;
 
   AuthProvider(this._authRepository) {
     checkSession();
@@ -16,15 +17,18 @@ class AuthProvider with ChangeNotifier {
   bool get isLoggedIn => _isLoggedIn;
   String? get userId => _userId;
   String? get username => _username;
+  String? get role => _role;
 
   void checkSession() {
     _isLoggedIn = _authRepository.isLoggedIn();
     if (_isLoggedIn) {
       _userId = _authRepository.getUserId();
       _username = _authRepository.getUsername();
+      _role = _authRepository.getRole();
     } else {
       _userId = null;
       _username = null;
+      _role = null;
     }
     notifyListeners();
   }
