@@ -36,7 +36,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
   void _showAddTaskDialog(BuildContext context, String userId) {
     final titleController = TextEditingController();
     final descController = TextEditingController();
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     String selectedCategory = 'kuliah';
     String selectedPriority = 'medium';
     String selectedStudent = 'all';
@@ -100,12 +99,17 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                 SizedBox(
                                   width: 14,
                                   height: 14,
-                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
                                 ),
                                 SizedBox(width: 8),
                                 Text(
                                   'Loading student list...',
-                                  style: TextStyle(color: Color(0xFF6B6862), fontSize: 12),
+                                  style: TextStyle(
+                                    color: Color(0xFF6B6862),
+                                    fontSize: 12,
+                                  ),
                                 ),
                               ],
                             ),
@@ -115,7 +119,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
                             padding: EdgeInsets.symmetric(vertical: 4.0),
                             child: Text(
                               '⚠️ No students registered yet.',
-                              style: TextStyle(color: Color(0xFFB3492F), fontSize: 12),
+                              style: TextStyle(
+                                color: Color(0xFFB3492F),
+                                fontSize: 12,
+                              ),
                             ),
                           ),
                         ],
@@ -138,7 +145,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: selectedCategory,
-                        decoration: const InputDecoration(labelText: 'Category'),
+                        decoration: const InputDecoration(
+                          labelText: 'Category',
+                        ),
                         items: const [
                           DropdownMenuItem(
                             value: 'kuliah',
@@ -159,14 +168,19 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       const SizedBox(height: 12),
                       DropdownButtonFormField<String>(
                         initialValue: selectedPriority,
-                        decoration: const InputDecoration(labelText: 'Priority'),
+                        decoration: const InputDecoration(
+                          labelText: 'Priority',
+                        ),
                         items: const [
                           DropdownMenuItem(value: 'low', child: Text('🟢 Low')),
                           DropdownMenuItem(
                             value: 'medium',
                             child: Text('🟡 Medium'),
                           ),
-                          DropdownMenuItem(value: 'high', child: Text('🔴 High')),
+                          DropdownMenuItem(
+                            value: 'high',
+                            child: Text('🔴 High'),
+                          ),
                         ],
                         onChanged: (v) =>
                             setBottomState(() => selectedPriority = v!),
@@ -182,12 +196,16 @@ class _TaskListScreenState extends State<TaskListScreen> {
                             context: context,
                             initialDate: selectedDeadline,
                             firstDate: DateTime.now(),
-                            lastDate: DateTime.now().add(const Duration(days: 365)),
+                            lastDate: DateTime.now().add(
+                              const Duration(days: 365),
+                            ),
                           );
                           if (date != null && context.mounted) {
                             final time = await showTimePicker(
                               context: context,
-                              initialTime: TimeOfDay.fromDateTime(selectedDeadline),
+                              initialTime: TimeOfDay.fromDateTime(
+                                selectedDeadline,
+                              ),
                             );
                             if (time != null) {
                               setBottomState(() {
@@ -214,7 +232,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
                               authProvider.users.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text('Cannot assign quest: No students registered yet.'),
+                                content: Text(
+                                  'Cannot assign quest: No students registered yet.',
+                                ),
                                 backgroundColor: Color(0xFFB3492F),
                               ),
                             );
@@ -257,7 +277,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                     id: const Uuid().v4(),
                                     userId: student.id,
                                     title: title,
-                                    description: descController.text.trim().isEmpty
+                                    description:
+                                        descController.text.trim().isEmpty
                                         ? null
                                         : descController.text.trim(),
                                     category: selectedCategory,
@@ -275,7 +296,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                   id: const Uuid().v4(),
                                   userId: selectedStudent,
                                   title: title,
-                                  description: descController.text.trim().isEmpty
+                                  description:
+                                      descController.text.trim().isEmpty
                                       ? null
                                       : descController.text.trim(),
                                   category: selectedCategory,
