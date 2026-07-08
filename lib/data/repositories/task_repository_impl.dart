@@ -22,7 +22,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
     // Try to sync to Supabase remote database
     try {
-      await _supabaseRemoteDatasource.upsertTask(taskModel.toMap());
+      await _supabaseRemoteDatasource.upsertTask(taskModel.toSupabaseMap());
       await _sqliteTaskDatasource.markAsSynced(task.id);
     } catch (_) {
       // Offline-first: ignore connection errors, task is saved locally
@@ -49,7 +49,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
     // Try to sync to Supabase remote database
     try {
-      await _supabaseRemoteDatasource.upsertTask(taskModel.toMap());
+      await _supabaseRemoteDatasource.upsertTask(taskModel.toSupabaseMap());
       await _sqliteTaskDatasource.markAsSynced(task.id);
     } catch (_) {
       // Offline-first: ignore connection errors, task remains unsynced
@@ -74,7 +74,7 @@ class TaskRepositoryImpl implements TaskRepository {
     // 1. Push all unsynced local tasks to remote Supabase
     final unsyncedTasks = await _sqliteTaskDatasource.getUnsyncedTasks(userId);
     for (final task in unsyncedTasks) {
-      await _supabaseRemoteDatasource.upsertTask(task.toMap());
+      await _supabaseRemoteDatasource.upsertTask(task.toSupabaseMap());
       await _sqliteTaskDatasource.markAsSynced(task.id);
     }
 

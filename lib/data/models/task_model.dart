@@ -55,6 +55,10 @@ class TaskModel extends Task {
     };
   }
 
+  Map<String, dynamic> toSupabaseMap() {
+    return toMap()..remove('is_synced');
+  }
+
   factory TaskModel.fromEntity(Task task) {
     return TaskModel(
       id: task.id,
