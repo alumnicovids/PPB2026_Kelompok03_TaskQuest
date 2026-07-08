@@ -60,12 +60,12 @@ class SqliteTaskDatasource {
     );
   }
 
-  Future<List<TaskModel>> getUnsyncedTasks(String userId) async {
+  Future<List<TaskModel>> getUnsyncedTasks() async {
     final db = await _sqliteHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       SqliteHelper.tableTasks,
-      where: 'user_id = ? AND is_synced = ?',
-      whereArgs: [userId, 0],
+      where: 'is_synced = ?',
+      whereArgs: [0],
     );
 
     return maps.map((map) => TaskModel.fromMap(map)).toList();

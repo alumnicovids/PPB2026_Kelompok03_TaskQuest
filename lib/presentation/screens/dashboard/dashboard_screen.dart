@@ -52,6 +52,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             listen: false,
           ).loadCharacter(userId);
           Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
+          Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
         } else if (role == 'dosen') {
           Provider.of<AuthProvider>(
             context,
@@ -61,6 +62,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             context,
             listen: false,
           ).loadSubmittedTasks();
+          Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
         } else if (role == 'superadmin') {
           Provider.of<AuthProvider>(context, listen: false).loadAllUsers();
         }

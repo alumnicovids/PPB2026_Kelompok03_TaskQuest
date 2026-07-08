@@ -28,9 +28,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
     if (userId != null) {
       if (authProvider.role == 'mahasiswa') {
         Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
+        Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
       } else {
         Provider.of<TaskProvider>(context, listen: false).loadAllTasks();
         authProvider.loadUsersByRole('mahasiswa');
+        Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
       }
     }
   }

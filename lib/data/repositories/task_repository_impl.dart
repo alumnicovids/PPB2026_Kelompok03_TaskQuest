@@ -76,7 +76,7 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<void> syncTasks(String userId) async {
     // 1. Push all unsynced local tasks to remote Supabase
-    final unsyncedTasks = await _sqliteTaskDatasource.getUnsyncedTasks(userId);
+    final unsyncedTasks = await _sqliteTaskDatasource.getUnsyncedTasks();
     for (final task in unsyncedTasks) {
       await _syncSingleTaskToRemote(task);
     }
@@ -170,13 +170,19 @@ class TaskRepositoryImpl implements TaskRepository {
     if (localPath != null &&
         !localPath.startsWith('http') &&
         File(localPath).existsSync()) {
-      final fileExtension = localPath.split('.').last;
-      final fileName = '${taskModel.id}_proof.$fileExtension';
-      final publicUrl = await _supabaseRemoteDatasource.uploadTaskProof(
-        localPath,
-        fileName,
-      );
-      uploadMap['proof_photo_path'] = publicUrl;
+      try {
+        final fileExtension = localPath.split('.').last;
+        final fileName = '${taskModel.id}_proof.$fileExtension';
+        final publicUrl = await _supabaseRemoteDatasource.uploadTaskProof(
+          localPath,
+          fileName,
+        );
+        uploadMap['proof_photo_path'] = publicUrl;
+      } catch (e) {
+        // If image upload fails (e.g. storage bucket not configured),
+        // we still want to proceed with updating the task metadata on Supabase
+        // so that the lecturer can see the submission.
+      }
     }
 
     await _supabaseRemoteDatasource.upsertTask(uploadMap);
