@@ -6,6 +6,9 @@ import '../screens/task_detail/task_detail_screen.dart';
 import '../screens/profile/profile_screen.dart';
 import '../screens/level_up/level_up_screen.dart';
 import '../screens/locations/locations_map_screen.dart';
+import '../screens/student_list/student_list_screen.dart';
+import '../screens/admin/register_dosen_screen.dart';
+import '../screens/review/review_submissions_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -38,6 +41,18 @@ class AppRouter {
       GoRoute(
         path: '/locations',
         builder: (context, state) => const LocationsMapScreen(),
+      ),
+      GoRoute(
+        path: '/students',
+        builder: (context, state) => const StudentListScreen(),
+      ),
+      GoRoute(
+        path: '/register-dosen',
+        builder: (context, state) => const RegisterDosenScreen(),
+      ),
+      GoRoute(
+        path: '/review-submissions',
+        builder: (context, state) => const ReviewSubmissionsScreen(),
       ),
     ],
   );
