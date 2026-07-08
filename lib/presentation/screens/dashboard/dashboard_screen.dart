@@ -7,6 +7,8 @@ import '../../providers/auth_provider.dart';
 import '../../providers/character_provider.dart';
 import '../../providers/task_provider.dart';
 import '../../widgets/level_up_animation.dart';
+import 'widgets/admin_dashboard_body.dart';
+import 'widgets/lecturer_dashboard_body.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -18,7 +20,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   Map<String, String>? _quote;
   bool _isLoadingQuote = true;
-  late GyroscopeService _gyroscopeService;
+  GyroscopeService? _gyroscopeService;
   bool _showLevelUpOverlay = false;
   int _levelUpLevel = 1;
   int _xpGained = 0;
@@ -29,9 +31,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _loadData();
     _fetchQuote();
-    _gyroscopeService = GyroscopeService();
-    _gyroscopeService.startListening();
-    _gyroscopeService.addListener(_onGyroUpdate);
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    if (authProvider.role == 'mahasiswa') {
+      _gyroscopeService = GyroscopeService();
+      _gyroscopeService!.startListening();
+      _gyroscopeService!.addListener(_onGyroUpdate);
+    }
   }
 
   void _loadData() {
@@ -39,11 +44,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userId = authProvider.userId;
       if (userId != null) {
-        Provider.of<CharacterProvider>(
-          context,
-          listen: false,
-        ).loadCharacter(userId);
-        Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
+        final role = authProvider.role ?? 'mahasiswa';
+        if (role == 'mahasiswa') {
+          Provider.of<CharacterProvider>(context, listen: false).loadCharacter(userId);
+          Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
+        } else if (role == 'dosen') {
+          Provider.of<AuthProvider>(context, listen: false).loadUsersByRole('mahasiswa');
+          Provider.of<TaskProvider>(context, listen: false).loadSubmittedTasks();
+        } else if (role == 'superadmin') {
+          Provider.of<AuthProvider>(context, listen: false).loadAllUsers();
+        }
       }
     });
   }
@@ -54,10 +64,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _isLoadingQuote = true;
     });
     try {
-      final quotesDatasource = Provider.of<QuotesDatasource>(
-        context,
-        listen: false,
-      );
+      final quotesDatasource = Provider.of<QuotesDatasource>(context, listen: false);
       final quote = await quotesDatasource.getRandomQuote();
       if (mounted) {
         setState(() {
@@ -75,10 +82,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   void _onGyroUpdate() {
-    if (_showLevelUpOverlay) {
+    if (_showLevelUpOverlay && _gyroscopeService != null) {
       _animKey.currentState?.applyGyroTilt(
-        _gyroscopeService.x,
-        _gyroscopeService.y,
+        _gyroscopeService!.x,
+        _gyroscopeService!.y,
       );
     }
   }
@@ -98,31 +105,126 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Syncing with remote database...')),
       );
-      await Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
-      if (mounted) {
-        await Provider.of<CharacterProvider>(
-          context,
-          listen: false,
-        ).loadCharacter(userId);
+
+      final role = authProvider.role ?? 'mahasiswa';
+      if (role == 'mahasiswa') {
+        await Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Data synced successfully!')),
-          );
+          await Provider.of<CharacterProvider>(context, listen: false).loadCharacter(userId);
         }
+      } else if (role == 'dosen') {
+        await Provider.of<TaskProvider>(context, listen: false).loadSubmittedTasks();
+        if (mounted) {
+          await Provider.of<AuthProvider>(context, listen: false).loadUsersByRole('mahasiswa');
+        }
+      } else if (role == 'superadmin') {
+        await Provider.of<AuthProvider>(context, listen: false).loadAllUsers();
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Data synced successfully!')),
+        );
       }
     }
   }
 
   @override
   void dispose() {
-    _gyroscopeService.removeListener(_onGyroUpdate);
-    _gyroscopeService.dispose();
+    if (_gyroscopeService != null) {
+      _gyroscopeService!.removeListener(_onGyroUpdate);
+      _gyroscopeService!.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final role = authProvider.role ?? 'mahasiswa';
+
+    if (role == 'dosen') {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Dashboard'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.sync_rounded),
+              onPressed: _syncData,
+              tooltip: 'Sync data',
+            ),
+            IconButton(
+              icon: const Icon(Icons.person),
+              onPressed: () => context.go('/profile'),
+              tooltip: 'Profile',
+            ),
+          ],
+        ),
+        body: const LecturerDashboardBody(),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: 0,
+          selectedItemColor: const Color(0xFFC15F3C),
+          unselectedItemColor: const Color(0xFF6B6862),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.assignment),
+              label: 'Quests',
+            ),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          ],
+          onTap: (index) {
+            if (index == 1) context.go('/tasks');
+            if (index == 2) context.go('/profile');
+          },
+        ),
+      );
+    }
+
+    if (role == 'superadmin') {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Dashboard'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.sync_rounded),
+              onPressed: _syncData,
+              tooltip: 'Sync data',
+            ),
+            IconButton(
+              icon: const Icon(Icons.person),
+              onPressed: () => context.go('/profile'),
+              tooltip: 'Profile',
+            ),
+          ],
+        ),
+        body: const AdminDashboardBody(),
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: 0,
+          selectedItemColor: const Color(0xFFC15F3C),
+          unselectedItemColor: const Color(0xFF6B6862),
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.dashboard),
+              label: 'Dashboard',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.assignment),
+              label: 'Quests',
+            ),
+            BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          ],
+          onTap: (index) {
+            if (index == 1) context.go('/tasks');
+            if (index == 2) context.go('/profile');
+          },
+        ),
+      );
+    }
+
     final characterProvider = Provider.of<CharacterProvider>(context);
     final taskProvider = Provider.of<TaskProvider>(context);
 
