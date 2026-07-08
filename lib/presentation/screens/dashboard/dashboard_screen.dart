@@ -108,9 +108,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       final role = authProvider.role ?? 'mahasiswa';
       if (role == 'mahasiswa') {
+        final charProvider = Provider.of<CharacterProvider>(context, listen: false);
+        final oldLevel = charProvider.character?.level ?? 1;
+
         await Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
         if (mounted) {
-          await Provider.of<CharacterProvider>(context, listen: false).loadCharacter(userId);
+          await charProvider.loadCharacter(userId);
+          final newLevel = charProvider.character?.level ?? 1;
+          if (newLevel > oldLevel) {
+            _triggerLevelUpOverlay(newLevel, 0);
+          }
         }
       } else if (role == 'dosen') {
         await Provider.of<TaskProvider>(context, listen: false).loadSubmittedTasks();
