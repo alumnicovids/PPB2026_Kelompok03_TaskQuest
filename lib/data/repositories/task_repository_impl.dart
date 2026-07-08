@@ -87,6 +87,12 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
+  Future<List<Task>> getAllTasks() async {
+    final rawTasks = await _supabaseRemoteDatasource.getAllTasks();
+    return rawTasks.map((map) => TaskModel.fromMap(map)).toList();
+  }
+
+  @override
   Future<List<Task>> getSubmittedTasks() async {
     final rawTasks = await _supabaseRemoteDatasource.getSubmittedTasks();
     return rawTasks.map((map) => TaskModel.fromMap(map)).toList();

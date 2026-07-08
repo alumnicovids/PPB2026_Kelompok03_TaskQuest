@@ -119,7 +119,11 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  Future<bool> registerLecturer(String username, String email, String password) async {
+  Future<bool> registerLecturer(
+    String username,
+    String email,
+    String password,
+  ) async {
     _isLoading = true;
     notifyListeners();
     try {

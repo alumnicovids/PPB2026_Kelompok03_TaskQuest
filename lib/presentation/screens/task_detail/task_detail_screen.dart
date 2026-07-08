@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../data/datasources/local/camera_datasource.dart';
 import '../../../domain/entities/task.dart';
-import '../../providers/character_provider.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/task_provider.dart';
 
 class TaskDetailScreen extends StatefulWidget {
@@ -165,6 +165,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           });
         }
       }
+    }
+  }
+
   Future<void> _dosenApprove(Task task) async {
     setState(() => _isProcessing = true);
     try {

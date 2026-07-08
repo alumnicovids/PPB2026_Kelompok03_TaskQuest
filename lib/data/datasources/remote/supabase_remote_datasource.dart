@@ -66,6 +66,14 @@ class SupabaseRemoteDatasource {
     await _supabaseClient.from('tasks').delete().eq('id', taskId);
   }
 
+  Future<List<Map<String, dynamic>>> getAllTasks() async {
+    final response = await _supabaseClient
+        .from('tasks')
+        .select('*, users(username)')
+        .order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(response);
+  }
+
   Future<List<Map<String, dynamic>>> getSubmittedTasks() async {
     final response = await _supabaseClient
         .from('tasks')

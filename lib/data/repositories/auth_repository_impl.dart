@@ -1,7 +1,9 @@
 import 'package:uuid/uuid.dart';
+import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/local/session_datasource.dart';
 import '../datasources/remote/supabase_remote_datasource.dart';
+import '../models/user_model.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final SupabaseRemoteDatasource _supabaseRemoteDatasource;
@@ -138,5 +140,22 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   String? getRole() {
     return _sessionDatasource.getRole();
+  }
+
+  @override
+  Future<List<UserEntity>> getAllUsers() async {
+    final rawUsers = await _supabaseRemoteDatasource.getAllUsers();
+    return rawUsers.map((map) => UserModel.fromMap(map)).toList();
+  }
+
+  @override
+  Future<List<UserEntity>> getUsersByRole(String role) async {
+    final rawUsers = await _supabaseRemoteDatasource.getUsersByRole(role);
+    return rawUsers.map((map) => UserModel.fromMap(map)).toList();
+  }
+
+  @override
+  Future<void> updateUserRole(String userId, String role) async {
+    await _supabaseRemoteDatasource.updateUser(userId, {'role': role});
   }
 }

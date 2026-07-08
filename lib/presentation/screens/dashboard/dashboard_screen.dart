@@ -373,7 +373,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     child: Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: ListenableBuilder(
-                        listenable: _gyroscopeService,
+                        listenable: _gyroscopeService!,
                         builder: (context, _) {
                           return Row(
                             children: [
@@ -392,9 +392,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     ),
                                   ),
                                   Text(
-                                    'x: ${_gyroscopeService.x.toStringAsFixed(2)}  '
-                                    'y: ${_gyroscopeService.y.toStringAsFixed(2)}  '
-                                    'z: ${_gyroscopeService.z.toStringAsFixed(2)}',
+                                    'x: ${_gyroscopeService!.x.toStringAsFixed(2)}  '
+                                    'y: ${_gyroscopeService!.y.toStringAsFixed(2)}  '
+                                    'z: ${_gyroscopeService!.z.toStringAsFixed(2)}',
                                     style: const TextStyle(
                                       fontSize: 12,
                                       color: Color(0xFF6B6862),

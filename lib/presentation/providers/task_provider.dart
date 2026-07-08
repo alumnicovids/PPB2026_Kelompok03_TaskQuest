@@ -27,6 +27,19 @@ class TaskProvider with ChangeNotifier {
     }
   }
 
+  Future<void> loadAllTasks() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _tasks = await _taskRepository.getAllTasks();
+    } catch (_) {
+      // Ignore or fallback
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> loadSubmittedTasks() async {
     _isLoading = true;
     notifyListeners();
@@ -85,7 +98,11 @@ class TaskProvider with ChangeNotifier {
     }
   }
 
-  Future<void> approveQuest(String taskId, String studentUserId, int xpReward) async {
+  Future<void> approveQuest(
+    String taskId,
+    String studentUserId,
+    int xpReward,
+  ) async {
     _isLoading = true;
     notifyListeners();
     try {

@@ -33,6 +33,8 @@ class FakeTaskRepository implements TaskRepository {
   @override
   Future<void> syncTasks(String userId) async {}
   @override
+  Future<List<Task>> getAllTasks() async => [];
+  @override
   Future<List<Task>> getSubmittedTasks() async => [];
   @override
   Future<void> approveTask(String taskId, String studentUserId, int xpReward) async {}
