@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/gyroscope_service.dart';
 import '../../../data/datasources/remote/quotes_datasource.dart';
+import '../../../core/constants/app_constants.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/character_provider.dart';
 import '../../providers/task_provider.dart';
@@ -46,11 +47,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (userId != null) {
         final role = authProvider.role ?? 'mahasiswa';
         if (role == 'mahasiswa') {
-          Provider.of<CharacterProvider>(context, listen: false).loadCharacter(userId);
+          Provider.of<CharacterProvider>(
+            context,
+            listen: false,
+          ).loadCharacter(userId);
           Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
         } else if (role == 'dosen') {
-          Provider.of<AuthProvider>(context, listen: false).loadUsersByRole('mahasiswa');
-          Provider.of<TaskProvider>(context, listen: false).loadSubmittedTasks();
+          Provider.of<AuthProvider>(
+            context,
+            listen: false,
+          ).loadUsersByRole('mahasiswa');
+          Provider.of<TaskProvider>(
+            context,
+            listen: false,
+          ).loadSubmittedTasks();
         } else if (role == 'superadmin') {
           Provider.of<AuthProvider>(context, listen: false).loadAllUsers();
         }
@@ -64,7 +74,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _isLoadingQuote = true;
     });
     try {
-      final quotesDatasource = Provider.of<QuotesDatasource>(context, listen: false);
+      final quotesDatasource = Provider.of<QuotesDatasource>(
+        context,
+        listen: false,
+      );
       final quote = await quotesDatasource.getRandomQuote();
       if (mounted) {
         setState(() {
@@ -108,10 +121,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       final role = authProvider.role ?? 'mahasiswa';
       if (role == 'mahasiswa') {
-        final charProvider = Provider.of<CharacterProvider>(context, listen: false);
+        final charProvider = Provider.of<CharacterProvider>(
+          context,
+          listen: false,
+        );
         final oldLevel = charProvider.character?.level ?? 1;
 
-        await Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
+        await Provider.of<TaskProvider>(
+          context,
+          listen: false,
+        ).syncTasks(userId);
         if (mounted) {
           await charProvider.loadCharacter(userId);
           final newLevel = charProvider.character?.level ?? 1;
@@ -120,9 +139,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
           }
         }
       } else if (role == 'dosen') {
-        await Provider.of<TaskProvider>(context, listen: false).loadSubmittedTasks();
+        await Provider.of<TaskProvider>(
+          context,
+          listen: false,
+        ).loadSubmittedTasks();
         if (mounted) {
-          await Provider.of<AuthProvider>(context, listen: false).loadUsersByRole('mahasiswa');
+          await Provider.of<AuthProvider>(
+            context,
+            listen: false,
+          ).loadUsersByRole('mahasiswa');
         }
       } else if (role == 'superadmin') {
         await Provider.of<AuthProvider>(context, listen: false).loadAllUsers();
@@ -237,15 +262,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     final character = characterProvider.character;
 
-    if (role == 'mahasiswa' && character == null && !characterProvider.isLoading) {
+    if (role == 'mahasiswa' &&
+        character == null &&
+        !characterProvider.isLoading) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         context.go('/setup-profile');
       });
-      return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
     final username = authProvider.username ?? 'Hero';
     final tasks = taskProvider.tasks;
@@ -309,16 +332,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             CircleAvatar(
                               radius: 40,
                               backgroundColor: const Color(0xFFE0A98C),
-                              child: Icon(
-                                character.classType.toLowerCase() == 'mage'
-                                    ? Icons.auto_stories_rounded
-                                    : character.classType.toLowerCase() == 'archer'
-                                        ? Icons.gps_fixed_rounded
-                                        : character.classType.toLowerCase() == 'assassin'
-                                            ? Icons.bolt_rounded
-                                            : Icons.shield_rounded,
-                                size: 40,
-                                color: const Color(0xFFC15F3C),
+                              child: ClipOval(
+                                child: Image.network(
+                                  '${AppConstants.supabaseUrl}/storage/v1/object/public/character-avatars/${character.classType.toLowerCase()}_stage${character.appearanceStage}.png',
+                                  fit: BoxFit.cover,
+                                  width: 80,
+                                  height: 80,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      character.classType.toLowerCase() ==
+                                              'mage'
+                                          ? Icons.auto_stories_rounded
+                                          : character.classType.toLowerCase() ==
+                                                'archer'
+                                          ? Icons.gps_fixed_rounded
+                                          : character.classType.toLowerCase() ==
+                                                'assassin'
+                                          ? Icons.bolt_rounded
+                                          : Icons.shield_rounded,
+                                      size: 40,
+                                      color: const Color(0xFFC15F3C),
+                                    );
+                                  },
+                                ),
                               ),
                             ),
                             const SizedBox(width: 16),

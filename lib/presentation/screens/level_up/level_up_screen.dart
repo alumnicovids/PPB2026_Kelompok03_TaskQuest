@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import '../../providers/character_provider.dart';
+import '../../../core/constants/app_constants.dart';
 
 class Particle {
   double x;
@@ -185,7 +186,8 @@ class _LevelUpScreenState extends State<LevelUpScreen>
                       children: [
                         // Class/Level Icon Wrapper with glowing effect
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          width: 104,
+                          height: 104,
                           decoration: BoxDecoration(
                             color: const Color(0xFFC15F3C).withAlpha(30),
                             shape: BoxShape.circle,
@@ -194,10 +196,20 @@ class _LevelUpScreenState extends State<LevelUpScreen>
                               width: 2,
                             ),
                           ),
-                          child: Icon(
-                            classIcon,
-                            size: 70,
-                            color: const Color(0xFFC15F3C),
+                          child: ClipOval(
+                            child: Image.network(
+                              '${AppConstants.supabaseUrl}/storage/v1/object/public/character-avatars/${className.toLowerCase()}_stage$appearanceStage.png',
+                              fit: BoxFit.cover,
+                              width: 100,
+                              height: 100,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  classIcon,
+                                  size: 70,
+                                  color: const Color(0xFFC15F3C),
+                                );
+                              },
+                            ),
                           ),
                         ),
                         const SizedBox(height: 20),

@@ -71,7 +71,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
                   if (authProvider.role != 'mahasiswa') ...[
                     DropdownButtonFormField<String>(
                       initialValue: selectedStudent,
-                      decoration: const InputDecoration(labelText: 'Assign Quest To'),
+                      decoration: const InputDecoration(
+                        labelText: 'Assign Quest To',
+                      ),
                       items: [
                         const DropdownMenuItem(
                           value: 'all',
@@ -84,7 +86,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
                           );
                         }),
                       ],
-                      onChanged: (v) => setBottomState(() => selectedStudent = v!),
+                      onChanged: (v) =>
+                          setBottomState(() => selectedStudent = v!),
                     ),
                     const SizedBox(height: 12),
                   ],
@@ -121,7 +124,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         child: Text('🧍 Pribadi'),
                       ),
                     ],
-                    onChanged: (v) => setBottomState(() => selectedCategory = v!),
+                    onChanged: (v) =>
+                        setBottomState(() => selectedCategory = v!),
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
@@ -135,7 +139,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       ),
                       DropdownMenuItem(value: 'high', child: Text('🔴 High')),
                     ],
-                    onChanged: (v) => setBottomState(() => selectedPriority = v!),
+                    onChanged: (v) =>
+                        setBottomState(() => selectedPriority = v!),
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
@@ -177,10 +182,13 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       final baseXp = selectedPriority == 'high'
                           ? 35
                           : selectedPriority == 'medium'
-                              ? 20
-                              : 10;
+                          ? 20
+                          : 10;
 
-                      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+                      final taskProvider = Provider.of<TaskProvider>(
+                        context,
+                        listen: false,
+                      );
 
                       if (authProvider.role == 'mahasiswa') {
                         final newTask = Task(

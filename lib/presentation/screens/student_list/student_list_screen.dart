@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/character_provider.dart';
 import '../../../domain/entities/user_entity.dart';
 import '../../../domain/entities/character.dart';
+import '../../../core/constants/app_constants.dart';
 
 class StudentListScreen extends StatefulWidget {
   const StudentListScreen({super.key});
@@ -31,8 +32,14 @@ class _StudentListScreenState extends State<StudentListScreen> {
 
   void _loadData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AuthProvider>(context, listen: false).loadUsersByRole('mahasiswa');
-      Provider.of<CharacterProvider>(context, listen: false).loadAllCharacters();
+      Provider.of<AuthProvider>(
+        context,
+        listen: false,
+      ).loadUsersByRole('mahasiswa');
+      Provider.of<CharacterProvider>(
+        context,
+        listen: false,
+      ).loadAllCharacters();
     });
   }
 
@@ -72,7 +79,10 @@ class _StudentListScreenState extends State<StudentListScreen> {
                     controller: _searchController,
                     decoration: InputDecoration(
                       hintText: 'Search students by name or email...',
-                      prefixIcon: const Icon(Icons.search, color: Color(0xFFC15F3C)),
+                      prefixIcon: const Icon(
+                        Icons.search,
+                        color: Color(0xFFC15F3C),
+                      ),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
                               icon: const Icon(Icons.clear),
@@ -134,7 +144,11 @@ class _StudentListScreenState extends State<StudentListScreen> {
                                 ),
                               );
 
-                              return _buildStudentCard(context, student, character);
+                              return _buildStudentCard(
+                                context,
+                                student,
+                                character,
+                              );
                             },
                           ),
                   ),
@@ -144,12 +158,18 @@ class _StudentListScreenState extends State<StudentListScreen> {
     );
   }
 
-  void _showEditCharacterDialog(BuildContext context, Character character, String studentName) {
+  void _showEditCharacterDialog(
+    BuildContext context,
+    Character character,
+    String studentName,
+  ) {
     final formKey = GlobalKey<FormState>();
     String selectedClass = character.classType;
     final levelController = TextEditingController(text: '${character.level}');
     final xpController = TextEditingController(text: '${character.currentXp}');
-    final stageController = TextEditingController(text: '${character.appearanceStage}');
+    final stageController = TextEditingController(
+      text: '${character.appearanceStage}',
+    );
 
     showDialog(
       context: context,
@@ -165,13 +185,24 @@ class _StudentListScreenState extends State<StudentListScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       DropdownButtonFormField<String>(
-                        value: selectedClass,
-                        decoration: const InputDecoration(labelText: 'Class Type'),
+                        initialValue: selectedClass,
+                        decoration: const InputDecoration(
+                          labelText: 'Class Type',
+                        ),
                         items: const [
-                          DropdownMenuItem(value: 'knight', child: Text('Knight')),
+                          DropdownMenuItem(
+                            value: 'knight',
+                            child: Text('Knight'),
+                          ),
                           DropdownMenuItem(value: 'mage', child: Text('Mage')),
-                          DropdownMenuItem(value: 'archer', child: Text('Archer')),
-                          DropdownMenuItem(value: 'assassin', child: Text('Assassin')),
+                          DropdownMenuItem(
+                            value: 'archer',
+                            child: Text('Archer'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'assassin',
+                            child: Text('Assassin'),
+                          ),
                         ],
                         onChanged: (v) => setState(() => selectedClass = v!),
                       ),
@@ -180,21 +211,31 @@ class _StudentListScreenState extends State<StudentListScreen> {
                         controller: levelController,
                         decoration: const InputDecoration(labelText: 'Level'),
                         keyboardType: TextInputType.number,
-                        validator: (v) => (v == null || int.tryParse(v) == null) ? 'Enter a valid number' : null,
+                        validator: (v) => (v == null || int.tryParse(v) == null)
+                            ? 'Enter a valid number'
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: xpController,
-                        decoration: const InputDecoration(labelText: 'Current XP'),
+                        decoration: const InputDecoration(
+                          labelText: 'Current XP',
+                        ),
                         keyboardType: TextInputType.number,
-                        validator: (v) => (v == null || int.tryParse(v) == null) ? 'Enter a valid number' : null,
+                        validator: (v) => (v == null || int.tryParse(v) == null)
+                            ? 'Enter a valid number'
+                            : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: stageController,
-                        decoration: const InputDecoration(labelText: 'Appearance Stage (1-5)'),
+                        decoration: const InputDecoration(
+                          labelText: 'Appearance Stage (1-5)',
+                        ),
                         keyboardType: TextInputType.number,
-                        validator: (v) => (v == null || int.tryParse(v) == null) ? 'Enter a valid number' : null,
+                        validator: (v) => (v == null || int.tryParse(v) == null)
+                            ? 'Enter a valid number'
+                            : null,
                       ),
                     ],
                   ),
@@ -221,14 +262,18 @@ class _StudentListScreenState extends State<StudentListScreen> {
                         updatedAt: DateTime.now(),
                       );
 
-                      await Provider.of<CharacterProvider>(context, listen: false)
-                          .updateCharacterDetails(updatedChar);
+                      await Provider.of<CharacterProvider>(
+                        context,
+                        listen: false,
+                      ).updateCharacterDetails(updatedChar);
 
                       if (dialogContext.mounted) {
                         Navigator.pop(dialogContext);
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Character for $studentName updated successfully!'),
+                            content: Text(
+                              'Character for $studentName updated successfully!',
+                            ),
                             backgroundColor: const Color(0xFF4E7A51),
                           ),
                         );
@@ -251,128 +296,142 @@ class _StudentListScreenState extends State<StudentListScreen> {
     Character character,
   ) {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final isTeacherOrAdmin = authProvider.role == 'dosen' || authProvider.role == 'superadmin';
+    final isTeacherOrAdmin =
+        authProvider.role == 'dosen' || authProvider.role == 'superadmin';
     final classType = character.classType.toLowerCase();
     final IconData classIcon = classType == 'mage'
         ? Icons.auto_stories_rounded
         : classType == 'archer'
-            ? Icons.gps_fixed_rounded
-            : classType == 'assassin'
-                ? Icons.bolt_rounded
-                : Icons.shield_rounded;
+        ? Icons.gps_fixed_rounded
+        : classType == 'assassin'
+        ? Icons.bolt_rounded
+        : Icons.shield_rounded;
 
     return GestureDetector(
-      onTap: isTeacherOrAdmin ? () => _showEditCharacterDialog(context, character, student.username) : null,
+      onTap: isTeacherOrAdmin
+          ? () => _showEditCharacterDialog(context, character, student.username)
+          : null,
       child: Card(
         margin: const EdgeInsets.only(bottom: 12),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Row(
             children: [
-            // Class Avatar
-            CircleAvatar(
-              radius: 28,
-              backgroundColor: const Color(0xFFEDE9DE),
-              child: Icon(
-                classIcon,
-                size: 28,
-                color: const Color(0xFFC15F3C),
+              // Class Avatar
+              CircleAvatar(
+                radius: 28,
+                backgroundColor: const Color(0xFFEDE9DE),
+                child: ClipOval(
+                  child: Image.network(
+                    '${AppConstants.supabaseUrl}/storage/v1/object/public/character-avatars/${classType}_stage${character.appearanceStage}.png',
+                    fit: BoxFit.cover,
+                    width: 56,
+                    height: 56,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        classIcon,
+                        size: 28,
+                        color: const Color(0xFFC15F3C),
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
-            const SizedBox(width: 16),
+              const SizedBox(width: 16),
 
-            // Student details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    student.username,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D2B26),
+              // Student details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      student.username,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2D2B26),
+                      ),
                     ),
-                  ),
-                  Text(
-                    student.email,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Color(0xFF6B6862),
+                    Text(
+                      student.email,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF6B6862),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
+                    const SizedBox(height: 8),
 
-                  // RPG Level & Class badge
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEDE9DE),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          classType.toUpperCase(),
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFFC15F3C),
+                    // RPG Level & Class badge
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
                           ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Level ${character.level} (Stage ${character.appearanceStage})',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: Color(0xFF2D2B26),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-
-                  // XP progress bar
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(2),
-                          child: LinearProgressIndicator(
-                            value: character.xpToNextLevel > 0
-                                ? character.currentXp / character.xpToNextLevel
-                                : 0,
-                            backgroundColor: const Color(0xFFEDE9DE),
-                            valueColor: const AlwaysStoppedAnimation<Color>(
-                              Color(0xFFC15F3C),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEDE9DE),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            classType.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFFC15F3C),
                             ),
-                            minHeight: 4,
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        '${character.currentXp}/${character.xpToNextLevel} XP',
-                        style: const TextStyle(
-                          fontSize: 10,
-                          color: Color(0xFF6B6862),
-                          fontWeight: FontWeight.bold,
+                        const SizedBox(width: 8),
+                        Text(
+                          'Level ${character.level} (Stage ${character.appearanceStage})',
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF2D2B26),
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                ],
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+
+                    // XP progress bar
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(2),
+                            child: LinearProgressIndicator(
+                              value: character.xpToNextLevel > 0
+                                  ? character.currentXp /
+                                        character.xpToNextLevel
+                                  : 0,
+                              backgroundColor: const Color(0xFFEDE9DE),
+                              valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color(0xFFC15F3C),
+                              ),
+                              minHeight: 4,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${character.currentXp}/${character.xpToNextLevel} XP',
+                          style: const TextStyle(
+                            fontSize: 10,
+                            color: Color(0xFF6B6862),
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

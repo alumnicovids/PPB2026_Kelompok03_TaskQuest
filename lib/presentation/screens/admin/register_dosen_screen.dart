@@ -37,7 +37,10 @@ class _RegisterDosenScreenState extends State<RegisterDosenScreen> {
     final password = _passwordController.text.trim();
     final confirmPassword = _confirmPasswordController.text.trim();
 
-    if (username.isEmpty || email.isEmpty || password.isEmpty || confirmPassword.isEmpty) {
+    if (username.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty ||
+        confirmPassword.isEmpty) {
       setState(() {
         _errorMessage = 'All fields are required';
       });
@@ -52,7 +55,11 @@ class _RegisterDosenScreenState extends State<RegisterDosenScreen> {
     }
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final success = await authProvider.registerLecturer(username, email, password);
+    final success = await authProvider.registerLecturer(
+      username,
+      email,
+      password,
+    );
 
     if (!mounted) return;
 
@@ -73,7 +80,8 @@ class _RegisterDosenScreenState extends State<RegisterDosenScreen> {
       });
     } else {
       setState(() {
-        _errorMessage = 'Registration failed. Username or email might be taken.';
+        _errorMessage =
+            'Registration failed. Username or email might be taken.';
       });
     }
   }
@@ -118,10 +126,7 @@ class _RegisterDosenScreenState extends State<RegisterDosenScreen> {
                   const SizedBox(height: 6),
                   const Text(
                     'Fill in credentials to register a new verified Dosen.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6B6862),
-                    ),
+                    style: TextStyle(fontSize: 13, color: Color(0xFF6B6862)),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 24),

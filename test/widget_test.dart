@@ -37,7 +37,11 @@ class FakeTaskRepository implements TaskRepository {
   @override
   Future<List<Task>> getSubmittedTasks() async => [];
   @override
-  Future<void> approveTask(String taskId, String studentUserId, int xpReward) async {}
+  Future<void> approveTask(
+    String taskId,
+    String studentUserId,
+    int xpReward,
+  ) async {}
   @override
   Future<void> rejectTask(String taskId) async {}
 }
@@ -46,9 +50,14 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<bool> login(String username, String password) async => false;
   @override
-  Future<bool> register(String username, String email, String password) async => false;
+  Future<bool> register(String username, String email, String password) async =>
+      false;
   @override
-  Future<bool> registerDosen(String username, String email, String password) async => false;
+  Future<bool> registerDosen(
+    String username,
+    String email,
+    String password,
+  ) async => false;
   @override
   Future<void> logout() async {}
   @override
@@ -77,7 +86,10 @@ class FakeCharacterRepository implements CharacterRepository {
   @override
   Future<List<Character>> getAllCharacters() async => [];
   @override
-  Future<String> uploadCharacterAvatar(String localPath, String fileName) async => '';
+  Future<String> uploadCharacterAvatar(
+    String localPath,
+    String fileName,
+  ) async => '';
 }
 
 class FakeLocationRepository implements LocationRepository {
@@ -101,7 +113,9 @@ class FakeXpLogRepository implements XpLogRepository {
 }
 
 void main() {
-  testWidgets('App renders login screen initially', (WidgetTester tester) async {
+  testWidgets('App renders login screen initially', (
+    WidgetTester tester,
+  ) async {
     final taskRepo = FakeTaskRepository();
     final authRepo = FakeAuthRepository();
     final charRepo = FakeCharacterRepository();

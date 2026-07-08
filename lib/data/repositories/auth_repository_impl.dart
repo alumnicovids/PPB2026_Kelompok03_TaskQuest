@@ -147,8 +147,14 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<void> updateUsername(String userId, String newUsername) async {
-    await _supabaseRemoteDatasource.updateUser(userId, {'username': newUsername});
+    await _supabaseRemoteDatasource.updateUser(userId, {
+      'username': newUsername,
+    });
     final role = _sessionDatasource.getRole() ?? 'mahasiswa';
-    await _sessionDatasource.saveSession(userId: userId, username: newUsername, role: role);
+    await _sessionDatasource.saveSession(
+      userId: userId,
+      username: newUsername,
+      role: role,
+    );
   }
 }

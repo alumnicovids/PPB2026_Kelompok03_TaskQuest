@@ -118,10 +118,7 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
                   const SizedBox(height: 8),
                   const Text(
                     'As SuperAdmin, you have exclusive permission to register official lecturer accounts.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6B6862),
-                    ),
+                    style: TextStyle(fontSize: 13, color: Color(0xFF6B6862)),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -143,7 +140,10 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
                 children: [
                   const Row(
                     children: [
-                      Icon(Icons.photo_library_rounded, color: Color(0xFFC15F3C)),
+                      Icon(
+                        Icons.photo_library_rounded,
+                        color: Color(0xFFC15F3C),
+                      ),
                       SizedBox(width: 12),
                       Text(
                         'Avatar Asset Manager',
@@ -158,10 +158,7 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
                   const SizedBox(height: 8),
                   const Text(
                     'As SuperAdmin, you can upload and replace kustom class avatar files stored in the cloud.',
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF6B6862),
-                    ),
+                    style: TextStyle(fontSize: 13, color: Color(0xFF6B6862)),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
@@ -228,9 +225,9 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
             Text(
               value,
               style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                    fontSize: 28,
-                    color: const Color(0xFF2D2B26),
-                  ),
+                fontSize: 28,
+                color: const Color(0xFF2D2B26),
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -291,7 +288,10 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
               items: const [
                 DropdownMenuItem(value: 'mahasiswa', child: Text('Mahasiswa')),
                 DropdownMenuItem(value: 'dosen', child: Text('Dosen')),
-                DropdownMenuItem(value: 'superadmin', child: Text('SuperAdmin')),
+                DropdownMenuItem(
+                  value: 'superadmin',
+                  child: Text('SuperAdmin'),
+                ),
               ],
               onChanged: _isProcessing
                   ? null

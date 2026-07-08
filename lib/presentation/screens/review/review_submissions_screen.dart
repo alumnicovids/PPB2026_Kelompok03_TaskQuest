@@ -8,7 +8,8 @@ class ReviewSubmissionsScreen extends StatefulWidget {
   const ReviewSubmissionsScreen({super.key});
 
   @override
-  State<ReviewSubmissionsScreen> createState() => _ReviewSubmissionsScreenState();
+  State<ReviewSubmissionsScreen> createState() =>
+      _ReviewSubmissionsScreenState();
 }
 
 class _ReviewSubmissionsScreenState extends State<ReviewSubmissionsScreen> {
@@ -61,7 +62,9 @@ class _ReviewSubmissionsScreenState extends State<ReviewSubmissionsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Quest "${task.title}" rejected. Reverted to In Progress.'),
+            content: Text(
+              'Quest "${task.title}" rejected. Reverted to In Progress.',
+            ),
             backgroundColor: const Color(0xFFC48A2D),
           ),
         );
@@ -146,7 +149,10 @@ class _ReviewSubmissionsScreenState extends State<ReviewSubmissionsScreen> {
                               itemCount: submittedTasks.length,
                               itemBuilder: (context, index) {
                                 final task = submittedTasks[index];
-                                return _buildSubmittedTaskListItem(context, task);
+                                return _buildSubmittedTaskListItem(
+                                  context,
+                                  task,
+                                );
                               },
                             ),
                     ),
@@ -216,10 +222,7 @@ class _ReviewSubmissionsScreenState extends State<ReviewSubmissionsScreen> {
               const SizedBox(height: 6),
               Text(
                 task.description!,
-                style: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF6B6862),
-                ),
+                style: const TextStyle(fontSize: 14, color: Color(0xFF6B6862)),
               ),
             ],
             const SizedBox(height: 12),

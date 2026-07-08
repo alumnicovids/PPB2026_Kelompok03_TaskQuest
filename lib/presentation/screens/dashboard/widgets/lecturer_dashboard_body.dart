@@ -23,7 +23,10 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
 
   void _loadLecturerData() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<AuthProvider>(context, listen: false).loadUsersByRole('mahasiswa');
+      Provider.of<AuthProvider>(
+        context,
+        listen: false,
+      ).loadUsersByRole('mahasiswa');
       Provider.of<TaskProvider>(context, listen: false).loadSubmittedTasks();
     });
   }
@@ -36,7 +39,9 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Approved quest "${task.title}". XP rewarded to student!'),
+            content: Text(
+              'Approved quest "${task.title}". XP rewarded to student!',
+            ),
             backgroundColor: const Color(0xFF4E7A51),
           ),
         );
@@ -63,7 +68,9 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Rejected quest "${task.title}". Status reverted to In Progress.'),
+            content: Text(
+              'Rejected quest "${task.title}". Status reverted to In Progress.',
+            ),
             backgroundColor: const Color(0xFFC48A2D),
           ),
         );
@@ -202,10 +209,7 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
                     SizedBox(height: 4),
                     Text(
                       'No student quests waiting for approval.',
-                      style: TextStyle(
-                        color: Color(0xFF6B6862),
-                        fontSize: 14,
-                      ),
+                      style: TextStyle(color: Color(0xFF6B6862), fontSize: 14),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -245,9 +249,9 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
             Text(
               value,
               style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                    fontSize: 28,
-                    color: const Color(0xFF2D2B26),
-                  ),
+                fontSize: 28,
+                color: const Color(0xFF2D2B26),
+              ),
             ),
             const SizedBox(height: 4),
             Text(
@@ -321,10 +325,7 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
                 task.description!,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF6B6862),
-                ),
+                style: const TextStyle(fontSize: 13, color: Color(0xFF6B6862)),
               ),
             ],
             const SizedBox(height: 12),
@@ -333,11 +334,7 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
               children: [
                 Row(
                   children: [
-                    const Icon(
-                      Icons.bolt,
-                      color: Color(0xFFC48A2D),
-                      size: 18,
-                    ),
+                    const Icon(Icons.bolt, color: Color(0xFFC48A2D), size: 18),
                     const SizedBox(width: 4),
                     Text(
                       'Reward: ${task.xpReward} XP',
@@ -379,7 +376,9 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
                   ),
                   const SizedBox(width: 8),
                   ElevatedButton.icon(
-                    onPressed: _isProcessing ? null : () => _handleApprove(task),
+                    onPressed: _isProcessing
+                        ? null
+                        : () => _handleApprove(task),
                     icon: const Icon(Icons.check),
                     label: const Text('Approve'),
                     style: ElevatedButton.styleFrom(

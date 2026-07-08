@@ -4,15 +4,18 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../providers/character_provider.dart';
+import '../../../core/constants/app_constants.dart';
 
 class CharacterAvatarManagerScreen extends StatefulWidget {
   const CharacterAvatarManagerScreen({super.key});
 
   @override
-  State<CharacterAvatarManagerScreen> createState() => _CharacterAvatarManagerScreenState();
+  State<CharacterAvatarManagerScreen> createState() =>
+      _CharacterAvatarManagerScreenState();
 }
 
-class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScreen> {
+class _CharacterAvatarManagerScreenState
+    extends State<CharacterAvatarManagerScreen> {
   String _selectedClass = 'knight';
   int _selectedStage = 1;
   String? _localPhotoPath;
@@ -25,7 +28,10 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
 
   Future<void> _capturePhoto() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.camera, imageQuality: 70);
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 70,
+    );
     if (pickedFile != null) {
       setState(() {
         _localPhotoPath = pickedFile.path;
@@ -36,7 +42,10 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
 
   Future<void> _selectFromGallery() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
     if (pickedFile != null) {
       setState(() {
         _localPhotoPath = pickedFile.path;
@@ -61,20 +70,25 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
 
     try {
       final fileName = '${_selectedClass}_stage$_selectedStage.png';
-      final characterProvider = Provider.of<CharacterProvider>(context, listen: false);
+      final characterProvider = Provider.of<CharacterProvider>(
+        context,
+        listen: false,
+      );
 
       await characterProvider.uploadAvatarImage(_localPhotoPath!, fileName);
 
       setState(() {
         _isSuccess = true;
-        _message = 'Avatar for ${_selectedClass.toUpperCase()} Stage $_selectedStage uploaded successfully!';
+        _message =
+            'Avatar for ${_selectedClass.toUpperCase()} Stage $_selectedStage uploaded successfully!';
         _localPhotoPath = null; // Clear local path
         _imageRefreshKey++; // Force refresh public URL preview image
       });
     } catch (e) {
       setState(() {
         _isSuccess = false;
-        _message = 'Upload failed. Please check if bucket "character-avatars" is created and public in Supabase Storage.';
+        _message =
+            'Upload failed. Please check if bucket "character-avatars" is created and public in Supabase Storage.';
       });
     } finally {
       setState(() {
@@ -86,7 +100,7 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
   @override
   Widget build(BuildContext context) {
     final publicUrl =
-        'https://whcabbztpbsvuzlupqda.supabase.co/storage/v1/object/public/character-avatars/${_selectedClass}_stage$_selectedStage.png?key=$_imageRefreshKey';
+        '${AppConstants.supabaseUrl}/storage/v1/object/public/character-avatars/${_selectedClass}_stage$_selectedStage.png?key=$_imageRefreshKey';
 
     return Scaffold(
       appBar: AppBar(
@@ -113,10 +127,7 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
             const SizedBox(height: 6),
             const Text(
               'Select class and stage to upload kustom avatar files directly to Supabase Storage.',
-              style: TextStyle(
-                fontSize: 13,
-                color: Color(0xFF6B6862),
-              ),
+              style: TextStyle(fontSize: 13, color: Color(0xFF6B6862)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -130,13 +141,17 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
                       : const Color(0xFFB3492F).withAlpha(30),
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: _isSuccess ? const Color(0xFF4E7A51) : const Color(0xFFB3492F),
+                    color: _isSuccess
+                        ? const Color(0xFF4E7A51)
+                        : const Color(0xFFB3492F),
                   ),
                 ),
                 child: Text(
                   _message!,
                   style: TextStyle(
-                    color: _isSuccess ? const Color(0xFF4E7A51) : const Color(0xFFB3492F),
+                    color: _isSuccess
+                        ? const Color(0xFF4E7A51)
+                        : const Color(0xFFB3492F),
                     fontWeight: FontWeight.bold,
                   ),
                   textAlign: TextAlign.center,
@@ -152,8 +167,10 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
                 child: Column(
                   children: [
                     DropdownButtonFormField<String>(
-                      value: _selectedClass,
-                      decoration: const InputDecoration(labelText: 'Character Class'),
+                      initialValue: _selectedClass,
+                      decoration: const InputDecoration(
+                        labelText: 'Character Class',
+                      ),
                       items: _classes.map((cls) {
                         return DropdownMenuItem(
                           value: cls,
@@ -170,12 +187,18 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
                     ),
                     const SizedBox(height: 16),
                     DropdownButtonFormField<int>(
-                      value: _selectedStage,
-                      decoration: const InputDecoration(labelText: 'Appearance Stage'),
-                      items: List.generate(5, (index) => index + 1).map((stage) {
+                      initialValue: _selectedStage,
+                      decoration: const InputDecoration(
+                        labelText: 'Appearance Stage',
+                      ),
+                      items: List.generate(5, (index) => index + 1).map((
+                        stage,
+                      ) {
                         return DropdownMenuItem(
                           value: stage,
-                          child: Text('Stage $stage (Level ${(stage - 1) * 5 + 1}+)'),
+                          child: Text(
+                            'Stage $stage (Level ${(stage - 1) * 5 + 1}+)',
+                          ),
                         );
                       }).toList(),
                       onChanged: (val) {
@@ -200,7 +223,10 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
                     children: [
                       const Text(
                         'Current Cloud Avatar',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Container(
@@ -220,9 +246,18 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.image_not_supported_rounded, color: Color(0xFF6B6862)),
+                                    Icon(
+                                      Icons.image_not_supported_rounded,
+                                      color: Color(0xFF6B6862),
+                                    ),
                                     SizedBox(height: 4),
-                                    Text('Not uploaded yet', style: TextStyle(fontSize: 11, color: Color(0xFF6B6862))),
+                                    Text(
+                                      'Not uploaded yet',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        color: Color(0xFF6B6862),
+                                      ),
+                                    ),
                                   ],
                                 ),
                               );
@@ -239,7 +274,10 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
                     children: [
                       const Text(
                         'New Selected Avatar',
-                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Container(
@@ -260,9 +298,18 @@ class _CharacterAvatarManagerScreenState extends State<CharacterAvatarManagerScr
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
-                                      Icon(Icons.add_photo_alternate_rounded, color: Color(0xFF6B6862)),
+                                      Icon(
+                                        Icons.add_photo_alternate_rounded,
+                                        color: Color(0xFF6B6862),
+                                      ),
                                       SizedBox(height: 4),
-                                      Text('No image selected', style: TextStyle(fontSize: 11, color: Color(0xFF6B6862))),
+                                      Text(
+                                        'No image selected',
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Color(0xFF6B6862),
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),

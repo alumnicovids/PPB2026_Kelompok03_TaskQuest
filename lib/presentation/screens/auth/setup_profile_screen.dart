@@ -22,25 +22,29 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
       'id': 'knight',
       'name': 'Knight',
       'icon': Icons.shield_rounded,
-      'desc': 'Ksatria dengan pertahanan kokoh, siap menghadapi rintangan akademik dengan kedisiplinan dan ketangguhan tinggi.',
+      'desc':
+          'Ksatria dengan pertahanan kokoh, siap menghadapi rintangan akademik dengan kedisiplinan dan ketangguhan tinggi.',
     },
     {
       'id': 'mage',
       'name': 'Mage',
       'icon': Icons.auto_stories_rounded,
-      'desc': 'Penyihir dengan pengetahuan luas, memecahkan masalah kompleks dan tugas sulit menggunakan kecerdasan analitis.',
+      'desc':
+          'Penyihir dengan pengetahuan luas, memecahkan masalah kompleks dan tugas sulit menggunakan kecerdasan analitis.',
     },
     {
       'id': 'archer',
       'name': 'Archer',
       'icon': Icons.gps_fixed_rounded,
-      'desc': 'Pemanah dengan akurasi tinggi, selalu fokus dan tepat sasaran pada target pencapaian nilai serta tepat waktu.',
+      'desc':
+          'Pemanah dengan akurasi tinggi, selalu fokus dan tepat sasaran pada target pencapaian nilai serta tepat waktu.',
     },
     {
       'id': 'assassin',
       'name': 'Assassin',
       'icon': Icons.bolt_rounded,
-      'desc': 'Pembunuh bayangan dengan kecepatan kilat, bertindak cepat, efisien, dan andal menyelesaikan misi dalam waktu singkat.',
+      'desc':
+          'Pembunuh bayangan dengan kecepatan kilat, bertindak cepat, efisien, dan andal menyelesaikan misi dalam waktu singkat.',
     },
   ];
 
@@ -75,7 +79,10 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final characterProvider = Provider.of<CharacterProvider>(context, listen: false);
+      final characterProvider = Provider.of<CharacterProvider>(
+        context,
+        listen: false,
+      );
       final userId = authProvider.userId;
 
       if (userId != null) {
@@ -114,7 +121,9 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final selectedClassData = _classes.firstWhere((c) => c['id'] == _selectedClass);
+    final selectedClassData = _classes.firstWhere(
+      (c) => c['id'] == _selectedClass,
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -139,10 +148,7 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
               const SizedBox(height: 6),
               const Text(
                 'Choose your username and class to start your academic adventure.',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF6B6862),
-                ),
+                style: TextStyle(fontSize: 13, color: Color(0xFF6B6862)),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
@@ -224,11 +230,15 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
                       });
                     },
                     child: Card(
-                      color: isSelected ? const Color(0xFFC15F3C) : const Color(0xFFFAF9F5),
+                      color: isSelected
+                          ? const Color(0xFFC15F3C)
+                          : const Color(0xFFFAF9F5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                         side: BorderSide(
-                          color: isSelected ? const Color(0xFFC15F3C) : const Color(0xFFE3E0D6),
+                          color: isSelected
+                              ? const Color(0xFFC15F3C)
+                              : const Color(0xFFE3E0D6),
                           width: 1.5,
                         ),
                       ),
@@ -240,7 +250,9 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
                             Icon(
                               item['icon'] as IconData,
                               size: 32,
-                              color: isSelected ? Colors.white : const Color(0xFFC15F3C),
+                              color: isSelected
+                                  ? Colors.white
+                                  : const Color(0xFFC15F3C),
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -248,7 +260,9 @@ class _SetupProfileScreenState extends State<SetupProfileScreen> {
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
-                                color: isSelected ? Colors.white : const Color(0xFF2D2B26),
+                                color: isSelected
+                                    ? Colors.white
+                                    : const Color(0xFF2D2B26),
                               ),
                             ),
                           ],

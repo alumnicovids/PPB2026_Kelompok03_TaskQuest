@@ -63,7 +63,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       );
 
       // 1. Update task in TaskProvider
-      await Provider.of<TaskProvider>(context, listen: false).updateTask(updatedTask);
+      await Provider.of<TaskProvider>(
+        context,
+        listen: false,
+      ).updateTask(updatedTask);
 
       if (!mounted) return;
 
@@ -75,10 +78,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           return AlertDialog(
             title: const Row(
               children: [
-                Icon(
-                  Icons.send_rounded,
-                  color: Color(0xFFC15F3C),
-                ),
+                Icon(Icons.send_rounded, color: Color(0xFFC15F3C)),
                 SizedBox(width: 8),
                 Text('Quest Submitted!'),
               ],
@@ -171,8 +171,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   Future<void> _dosenApprove(Task task) async {
     setState(() => _isProcessing = true);
     try {
-      await Provider.of<TaskProvider>(context, listen: false)
-          .approveQuest(task.id, task.userId, task.xpReward);
+      await Provider.of<TaskProvider>(
+        context,
+        listen: false,
+      ).approveQuest(task.id, task.userId, task.xpReward);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -199,8 +201,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   Future<void> _dosenReject(Task task) async {
     setState(() => _isProcessing = true);
     try {
-      await Provider.of<TaskProvider>(context, listen: false)
-          .rejectQuest(task.id);
+      await Provider.of<TaskProvider>(
+        context,
+        listen: false,
+      ).rejectQuest(task.id);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -438,12 +442,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFFC48A2D).withAlpha(30),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFFC48A2D)),
+                              border: Border.all(
+                                color: const Color(0xFFC48A2D),
+                              ),
                             ),
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.hourglass_empty_rounded, color: Color(0xFFC48A2D)),
+                                Icon(
+                                  Icons.hourglass_empty_rounded,
+                                  color: Color(0xFFC48A2D),
+                                ),
                                 SizedBox(width: 8),
                                 Text(
                                   'Quest Submitted! Waiting for approval.',
@@ -459,21 +468,30 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                             children: [
                               Expanded(
                                 child: OutlinedButton.icon(
-                                  onPressed: _isProcessing ? null : () => _dosenReject(task),
-                                  icon: const Icon(Icons.close, color: Color(0xFFB3492F)),
+                                  onPressed: _isProcessing
+                                      ? null
+                                      : () => _dosenReject(task),
+                                  icon: const Icon(
+                                    Icons.close,
+                                    color: Color(0xFFB3492F),
+                                  ),
                                   label: const Text(
                                     'Reject',
                                     style: TextStyle(color: Color(0xFFB3492F)),
                                   ),
                                   style: OutlinedButton.styleFrom(
-                                    side: const BorderSide(color: Color(0xFFB3492F)),
+                                    side: const BorderSide(
+                                      color: Color(0xFFB3492F),
+                                    ),
                                   ),
                                 ),
                               ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: ElevatedButton.icon(
-                                  onPressed: _isProcessing ? null : () => _dosenApprove(task),
+                                  onPressed: _isProcessing
+                                      ? null
+                                      : () => _dosenApprove(task),
                                   icon: const Icon(Icons.check_circle_rounded),
                                   label: const Text('Approve'),
                                   style: ElevatedButton.styleFrom(
@@ -509,7 +527,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                               ),
                               const SizedBox(height: 16),
                               ElevatedButton.icon(
-                                onPressed: _isProcessing ? null : () => _completeQuest(task),
+                                onPressed: _isProcessing
+                                    ? null
+                                    : () => _completeQuest(task),
                                 icon: const Icon(Icons.check_circle),
                                 label: const Text('Complete Quest'),
                               ),
@@ -520,12 +540,17 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                             decoration: BoxDecoration(
                               color: const Color(0xFF6B6862).withAlpha(30),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: const Color(0xFF6B6862)),
+                              border: Border.all(
+                                color: const Color(0xFF6B6862),
+                              ),
                             ),
                             child: const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.info_outline_rounded, color: Color(0xFF6B6862)),
+                                Icon(
+                                  Icons.info_outline_rounded,
+                                  color: Color(0xFF6B6862),
+                                ),
                                 SizedBox(width: 8),
                                 Text(
                                   'Quest is active (student working on it)',

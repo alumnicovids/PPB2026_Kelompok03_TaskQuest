@@ -39,7 +39,9 @@ class TaskModel extends Task {
           ? DateTime.parse(map['completed_at'] as String)
           : null,
       createdAt: DateTime.parse(map['created_at'] as String),
-      isSynced: map['is_synced'] != null ? (map['is_synced'] as int) == 1 : false,
+      isSynced: map['is_synced'] != null
+          ? (map['is_synced'] as int) == 1
+          : false,
       studentUsername: studentUsername,
     );
   }

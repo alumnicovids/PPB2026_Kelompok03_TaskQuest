@@ -76,7 +76,13 @@ class CharacterRepositoryImpl implements CharacterRepository {
   }
 
   @override
-  Future<String> uploadCharacterAvatar(String localPath, String fileName) async {
-    return await _supabaseRemoteDatasource.uploadCharacterAvatar(localPath, fileName);
+  Future<String> uploadCharacterAvatar(
+    String localPath,
+    String fileName,
+  ) async {
+    return await _supabaseRemoteDatasource.uploadCharacterAvatar(
+      localPath,
+      fileName,
+    );
   }
 }
