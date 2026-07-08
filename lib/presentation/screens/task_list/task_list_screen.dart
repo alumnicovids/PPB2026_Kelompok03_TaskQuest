@@ -21,20 +21,25 @@ class _TaskListScreenState extends State<TaskListScreen> {
   }
 
   void _loadTasks() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final userId = authProvider.userId;
-      if (userId != null) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final userId = authProvider.userId;
+    if (userId != null) {
+      if (authProvider.role == 'mahasiswa') {
         Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
+      } else {
+        Provider.of<TaskProvider>(context, listen: false).loadAllTasks();
+        authProvider.loadUsersByRole('mahasiswa');
       }
-    });
+    }
   }
 
   void _showAddTaskDialog(BuildContext context, String userId) {
     final titleController = TextEditingController();
     final descController = TextEditingController();
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     String selectedCategory = 'kuliah';
     String selectedPriority = 'medium';
+    String selectedStudent = 'all';
     DateTime selectedDeadline = DateTime.now().add(const Duration(days: 3));
 
     showModalBottomSheet(
@@ -63,6 +68,26 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     style: Theme.of(context).textTheme.displaySmall,
                   ),
                   const SizedBox(height: 16),
+                  if (authProvider.role != 'mahasiswa') ...[
+                    DropdownButtonFormField<String>(
+                      initialValue: selectedStudent,
+                      decoration: const InputDecoration(labelText: 'Assign Quest To'),
+                      items: [
+                        const DropdownMenuItem(
+                          value: 'all',
+                          child: Text('👥 All Students'),
+                        ),
+                        ...authProvider.users.map((student) {
+                          return DropdownMenuItem(
+                            value: student.id,
+                            child: Text('🧍 ${student.username}'),
+                          );
+                        }),
+                      ],
+                      onChanged: (v) => setBottomState(() => selectedStudent = v!),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   TextField(
                     controller: titleController,
                     decoration: const InputDecoration(
@@ -96,8 +121,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         child: Text('🧍 Pribadi'),
                       ),
                     ],
-                    onChanged: (v) =>
-                        setBottomState(() => selectedCategory = v!),
+                    onChanged: (v) => setBottomState(() => selectedCategory = v!),
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
@@ -111,8 +135,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                       ),
                       DropdownMenuItem(value: 'high', child: Text('🔴 High')),
                     ],
-                    onChanged: (v) =>
-                        setBottomState(() => selectedPriority = v!),
+                    onChanged: (v) => setBottomState(() => selectedPriority = v!),
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton.icon(
@@ -148,30 +171,78 @@ class _TaskListScreenState extends State<TaskListScreen> {
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
-                    onPressed: () {
-                      if (titleController.text.trim().isEmpty) return;
+                    onPressed: () async {
+                      final title = titleController.text.trim();
+                      if (title.isEmpty) return;
                       final baseXp = selectedPriority == 'high'
                           ? 35
                           : selectedPriority == 'medium'
-                          ? 20
-                          : 10;
-                      final newTask = Task(
-                        id: const Uuid().v4(),
-                        userId: userId,
-                        title: titleController.text.trim(),
-                        description: descController.text.trim().isEmpty
-                            ? null
-                            : descController.text.trim(),
-                        category: selectedCategory,
-                        priority: selectedPriority,
-                        deadline: selectedDeadline,
-                        status: 'pending',
-                        xpReward: baseXp,
-                        createdAt: DateTime.now(),
-                        isSynced: false,
-                      );
-                      context.read<TaskProvider>().addTask(newTask);
-                      Navigator.pop(ctx);
+                              ? 20
+                              : 10;
+
+                      final taskProvider = Provider.of<TaskProvider>(context, listen: false);
+
+                      if (authProvider.role == 'mahasiswa') {
+                        final newTask = Task(
+                          id: const Uuid().v4(),
+                          userId: userId,
+                          title: title,
+                          description: descController.text.trim().isEmpty
+                              ? null
+                              : descController.text.trim(),
+                          category: selectedCategory,
+                          priority: selectedPriority,
+                          deadline: selectedDeadline,
+                          status: 'pending',
+                          xpReward: baseXp,
+                          createdAt: DateTime.now(),
+                          isSynced: false,
+                        );
+                        await taskProvider.addTask(newTask);
+                      } else {
+                        if (selectedStudent == 'all') {
+                          for (final student in authProvider.users) {
+                            final newTask = Task(
+                              id: const Uuid().v4(),
+                              userId: student.id,
+                              title: title,
+                              description: descController.text.trim().isEmpty
+                                  ? null
+                                  : descController.text.trim(),
+                              category: selectedCategory,
+                              priority: selectedPriority,
+                              deadline: selectedDeadline,
+                              status: 'pending',
+                              xpReward: baseXp,
+                              createdAt: DateTime.now(),
+                              isSynced: false,
+                            );
+                            await taskProvider.addTask(newTask);
+                          }
+                        } else {
+                          final newTask = Task(
+                            id: const Uuid().v4(),
+                            userId: selectedStudent,
+                            title: title,
+                            description: descController.text.trim().isEmpty
+                                ? null
+                                : descController.text.trim(),
+                            category: selectedCategory,
+                            priority: selectedPriority,
+                            deadline: selectedDeadline,
+                            status: 'pending',
+                            xpReward: baseXp,
+                            createdAt: DateTime.now(),
+                            isSynced: false,
+                          );
+                          await taskProvider.addTask(newTask);
+                        }
+                        // Refresh task board list
+                        await taskProvider.loadAllTasks();
+                      }
+                      if (context.mounted) {
+                        Navigator.pop(ctx);
+                      }
                     },
                     child: const Text('Add Quest'),
                   ),
@@ -229,7 +300,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 return _buildTaskCard(context, task, taskProvider);
               },
             ),
-      floatingActionButton: userId == null
+      floatingActionButton: (userId == null || authProvider.role == 'mahasiswa')
           ? null
           : FloatingActionButton(
               onPressed: () => _showAddTaskDialog(context, userId),
