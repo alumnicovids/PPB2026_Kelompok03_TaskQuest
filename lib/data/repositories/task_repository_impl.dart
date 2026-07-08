@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/repositories/task_repository.dart';
@@ -21,16 +20,15 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<void> createTask(Task task) async {
     final taskModel = TaskModel.fromEntity(task.copyWith(isSynced: false));
 
-    // Save to SQLite locally first
+    // Save to SQLite locally first (offline-first)
     await _sqliteTaskDatasource.insertTask(taskModel);
 
-    // Try to sync to Supabase remote database
+    // Try to sync to Supabase — failures are intentionally swallowed.
+    // Task is already saved locally and will sync on next attempt.
     try {
       await _syncSingleTaskToRemote(taskModel);
-    } on PostgrestException catch (_) {
-      rethrow;
     } catch (_) {
-      // Offline-first: ignore connection errors, task is saved locally
+      // Offline-first: ignore all sync errors
     }
   }
 
@@ -49,31 +47,27 @@ class TaskRepositoryImpl implements TaskRepository {
   Future<void> updateTask(Task task) async {
     final taskModel = TaskModel.fromEntity(task.copyWith(isSynced: false));
 
-    // Update SQLite locally first
+    // Update SQLite locally first (offline-first)
     await _sqliteTaskDatasource.updateTask(taskModel);
 
-    // Try to sync to Supabase remote database
+    // Try to sync to Supabase — failures are intentionally swallowed.
     try {
       await _syncSingleTaskToRemote(taskModel);
-    } on PostgrestException catch (_) {
-      rethrow;
     } catch (_) {
-      // Offline-first: ignore connection errors, task remains unsynced
+      // Offline-first: ignore all sync errors
     }
   }
 
   @override
   Future<void> deleteTask(String taskId) async {
-    // Delete from local SQLite
+    // Delete from local SQLite first (offline-first)
     await _sqliteTaskDatasource.deleteTask(taskId);
 
-    // Try to delete from Supabase remote database
+    // Try to delete from Supabase — failures are intentionally swallowed.
     try {
       await _supabaseRemoteDatasource.deleteTask(taskId);
-    } on PostgrestException catch (_) {
-      rethrow;
     } catch (_) {
-      // Offline-first: ignore connection errors
+      // Offline-first: ignore all sync errors
     }
   }
 
