@@ -88,10 +88,15 @@ class TaskRepositoryImpl implements TaskRepository {
     final localPath = taskModel.proofPhotoPath;
     final uploadMap = taskModel.toSupabaseMap();
 
-    if (localPath != null && !localPath.startsWith('http') && File(localPath).existsSync()) {
+    if (localPath != null &&
+        !localPath.startsWith('http') &&
+        File(localPath).existsSync()) {
       final fileExtension = localPath.split('.').last;
       final fileName = '${taskModel.id}_proof.$fileExtension';
-      final publicUrl = await _supabaseRemoteDatasource.uploadTaskProof(localPath, fileName);
+      final publicUrl = await _supabaseRemoteDatasource.uploadTaskProof(
+        localPath,
+        fileName,
+      );
       uploadMap['proof_photo_path'] = publicUrl;
     }
 

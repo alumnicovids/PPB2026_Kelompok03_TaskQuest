@@ -9,14 +9,10 @@ class SqliteXpLogDatasource {
 
   Future<void> insertXpLog(XpLogModel log) async {
     final db = await _sqliteHelper.database;
-    await db.insert(
-      SqliteHelper.tableXpLogs,
-      {
-        ...log.toMap(),
-        'is_synced': 0, // Set unsynced initially
-      },
-      conflictAlgorithm: ConflictAlgorithm.replace,
-    );
+    await db.insert(SqliteHelper.tableXpLogs, {
+      ...log.toMap(),
+      'is_synced': 0, // Set unsynced initially
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<List<XpLogModel>> getXpLogs(String userId) async {

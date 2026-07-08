@@ -9,11 +9,13 @@ class SessionDatasource {
   Future<bool> saveSession({
     required String userId,
     required String username,
+    required String role,
   }) async {
     final futures = await Future.wait([
       _sharedPreferences.setBool(AppConstants.keyIsLoggedIn, true),
       _sharedPreferences.setString(AppConstants.keyUserId, userId),
       _sharedPreferences.setString(AppConstants.keyUserName, username),
+      _sharedPreferences.setString(AppConstants.keyUserRole, role),
     ]);
     return futures.every((element) => element == true);
   }
@@ -23,6 +25,7 @@ class SessionDatasource {
       _sharedPreferences.remove(AppConstants.keyIsLoggedIn),
       _sharedPreferences.remove(AppConstants.keyUserId),
       _sharedPreferences.remove(AppConstants.keyUserName),
+      _sharedPreferences.remove(AppConstants.keyUserRole),
     ]);
     return futures.every((element) => element == true);
   }
@@ -37,5 +40,9 @@ class SessionDatasource {
 
   String? getUsername() {
     return _sharedPreferences.getString(AppConstants.keyUserName);
+  }
+
+  String? getRole() {
+    return _sharedPreferences.getString(AppConstants.keyUserRole);
   }
 }

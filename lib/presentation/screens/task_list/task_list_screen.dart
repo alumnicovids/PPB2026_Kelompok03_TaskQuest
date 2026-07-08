@@ -203,32 +203,32 @@ class _TaskListScreenState extends State<TaskListScreen> {
       body: taskProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : taskProvider.tasks.isEmpty
-              ? const Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.assignment_outlined,
-                        size: 64,
-                        color: Color(0xFF6B6862),
-                      ),
-                      SizedBox(height: 16),
-                      Text(
-                        'No quests yet!\nTap + to add your first quest.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(color: Color(0xFF6B6862)),
-                      ),
-                    ],
+          ? const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.assignment_outlined,
+                    size: 64,
+                    color: Color(0xFF6B6862),
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16.0),
-                  itemCount: taskProvider.tasks.length,
-                  itemBuilder: (context, index) {
-                    final task = taskProvider.tasks[index];
-                    return _buildTaskCard(context, task, taskProvider);
-                  },
-                ),
+                  SizedBox(height: 16),
+                  Text(
+                    'No quests yet!\nTap + to add your first quest.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Color(0xFF6B6862)),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16.0),
+              itemCount: taskProvider.tasks.length,
+              itemBuilder: (context, index) {
+                final task = taskProvider.tasks[index];
+                return _buildTaskCard(context, task, taskProvider);
+              },
+            ),
       floatingActionButton: userId == null
           ? null
           : FloatingActionButton(

@@ -39,6 +39,8 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<bool> register(String username, String email, String password) async => false;
   @override
+  Future<bool> registerDosen(String username, String email, String password) async => false;
+  @override
   Future<void> logout() async {}
   @override
   bool isLoggedIn() => false;
@@ -46,6 +48,8 @@ class FakeAuthRepository implements AuthRepository {
   String? getUserId() => null;
   @override
   String? getUsername() => null;
+  @override
+  String? getRole() => null;
 }
 
 class FakeCharacterRepository implements CharacterRepository {

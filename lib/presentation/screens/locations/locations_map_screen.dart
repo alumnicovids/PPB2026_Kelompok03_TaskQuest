@@ -19,7 +19,10 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
   final MapController _mapController = MapController();
   List<StudyLocation> _locations = [];
   bool _isLoading = false;
-  LatLng _initialCenter = const LatLng(-7.2504, 112.7688); // Default to Surabaya/Campus area
+  LatLng _initialCenter = const LatLng(
+    -7.2504,
+    112.7688,
+  ); // Default to Surabaya/Campus area
   LatLng? _currentUserLocation;
 
   @override
@@ -110,7 +113,10 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userId = authProvider.userId;
       if (userId != null) {
-        final locationRepo = Provider.of<LocationRepository>(context, listen: false);
+        final locationRepo = Provider.of<LocationRepository>(
+          context,
+          listen: false,
+        );
         try {
           await locationRepo.syncLocations(userId);
         } catch (_) {
@@ -214,7 +220,10 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
       });
 
       try {
-        final locationRepo = Provider.of<LocationRepository>(context, listen: false);
+        final locationRepo = Provider.of<LocationRepository>(
+          context,
+          listen: false,
+        );
         await locationRepo.saveLocation(newLoc);
         await _loadLocations();
         if (mounted) {
@@ -251,7 +260,9 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB3492F)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFB3492F),
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -264,7 +275,10 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
       });
 
       try {
-        final locationRepo = Provider.of<LocationRepository>(context, listen: false);
+        final locationRepo = Provider.of<LocationRepository>(
+          context,
+          listen: false,
+        );
         await locationRepo.deleteLocation(location.id);
         await _loadLocations();
         if (mounted) {
@@ -314,7 +328,8 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                      urlTemplate:
+                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
                       userAgentPackageName: 'com.example.taskquest',
                     ),
                     MarkerLayer(
@@ -326,7 +341,9 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
                             height: 40,
                             child: Container(
                               decoration: BoxDecoration(
-                                color: Colors.blue.withAlpha((0.3 * 255).round()),
+                                color: Colors.blue.withAlpha(
+                                  (0.3 * 255).round(),
+                                ),
                                 shape: BoxShape.circle,
                               ),
                               child: Center(
@@ -336,80 +353,94 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
                                   decoration: BoxDecoration(
                                     color: Colors.blue,
                                     shape: BoxShape.circle,
-                                    border: Border.all(color: Colors.white, width: 2),
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 2,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
                         ..._locations.map((loc) {
-                        return Marker(
-                          point: LatLng(loc.latitude, loc.longitude),
-                          width: 80,
-                          height: 80,
-                          child: GestureDetector(
-                            onTap: () {
-                              showModalBottomSheet(
-                                context: context,
-                                builder: (sheetContext) => Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Icon(
-                                            loc.isFavorite ? Icons.star_rounded : Icons.place_rounded,
-                                            color: const Color(0xFFC15F3C),
-                                            size: 28,
-                                          ),
-                                          const SizedBox(width: 8),
-                                          Expanded(
-                                            child: Text(
-                                              loc.name,
-                                              style: const TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
+                          return Marker(
+                            point: LatLng(loc.latitude, loc.longitude),
+                            width: 80,
+                            height: 80,
+                            child: GestureDetector(
+                              onTap: () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (sheetContext) => Padding(
+                                    padding: const EdgeInsets.all(20.0),
+                                    child: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.stretch,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              loc.isFavorite
+                                                  ? Icons.star_rounded
+                                                  : Icons.place_rounded,
+                                              color: const Color(0xFFC15F3C),
+                                              size: 28,
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Expanded(
+                                              child: Text(
+                                                loc.name,
+                                                style: const TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
                                               ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        'Coordinates: ${loc.latitude.toStringAsFixed(5)}, ${loc.longitude.toStringAsFixed(5)}',
-                                        style: TextStyle(color: Colors.grey[600]),
-                                      ),
-                                      const SizedBox(height: 20),
-                                      ElevatedButton.icon(
-                                        onPressed: () {
-                                          Navigator.pop(sheetContext);
-                                          _deleteLocation(loc);
-                                        },
-                                        icon: const Icon(Icons.delete_forever),
-                                        label: const Text('Delete Spot'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: const Color(0xFFB3492F),
+                                          ],
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Coordinates: ${loc.latitude.toStringAsFixed(5)}, ${loc.longitude.toStringAsFixed(5)}',
+                                          style: TextStyle(
+                                            color: Colors.grey[600],
+                                          ),
+                                        ),
+                                        const SizedBox(height: 20),
+                                        ElevatedButton.icon(
+                                          onPressed: () {
+                                            Navigator.pop(sheetContext);
+                                            _deleteLocation(loc);
+                                          },
+                                          icon: const Icon(
+                                            Icons.delete_forever,
+                                          ),
+                                          label: const Text('Delete Spot'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: const Color(
+                                              0xFFB3492F,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              );
-                            },
-                            child: Icon(
-                              Icons.location_on_sharp,
-                              size: 40,
-                              color: loc.isFavorite ? Colors.red : const Color(0xFFC15F3C),
+                                );
+                              },
+                              child: Icon(
+                                Icons.location_on_sharp,
+                                size: 40,
+                                color: loc.isFavorite
+                                    ? Colors.red
+                                    : const Color(0xFFC15F3C),
+                              ),
                             ),
-                          ),
-                        );
-                      }),
-                    ],
-                  ),
-                ],
-              ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ],
+                ),
                 Positioned(
                   top: 16,
                   left: 16,
@@ -417,7 +448,10 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
                   child: Card(
                     color: Colors.white.withAlpha((0.9 * 255).round()),
                     child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       child: Row(
                         children: [
                           Icon(Icons.info_outline, color: Color(0xFFC15F3C)),
@@ -425,7 +459,10 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
                           Expanded(
                             child: Text(
                               'Tap anywhere on the map to mark a new study spot!',
-                              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ],

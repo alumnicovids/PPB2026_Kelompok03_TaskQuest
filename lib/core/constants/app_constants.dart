@@ -5,6 +5,7 @@ class AppConstants {
   static const String keyIsLoggedIn = 'is_logged_in';
   static const String keyUserId = 'user_id';
   static const String keyUserName = 'user_name';
+  static const String keyUserRole = 'user_role';
 
   // Supabase Configuration
   static const String supabaseUrl = 'https://whcabbztpbsvuzlupqda.supabase.co';

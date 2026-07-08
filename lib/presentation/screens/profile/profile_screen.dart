@@ -24,9 +24,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Logout failed: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Logout failed: $e')));
       }
     } finally {
       if (mounted) {
@@ -55,14 +55,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: CircleAvatar(
                       radius: 50,
                       backgroundColor: Color(0xFFEDE9DE),
-                      child: Icon(Icons.person, size: 50, color: Color(0xFF6B6862)),
+                      child: Icon(
+                        Icons.person,
+                        size: 50,
+                        color: Color(0xFF6B6862),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
                   Center(
                     child: Text(
                       username,
-                      style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                   Center(
@@ -75,7 +82,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const Divider(),
                   const SizedBox(height: 16),
                   ListTile(
-                    leading: const Icon(Icons.map_rounded, color: Color(0xFFC15F3C)),
+                    leading: const Icon(
+                      Icons.map_rounded,
+                      color: Color(0xFFC15F3C),
+                    ),
                     title: const Text('Study Locations Map'),
                     subtitle: const Text('Find places to study or consult'),
                     trailing: const Icon(Icons.chevron_right),
@@ -84,11 +94,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                   ),
                   ListTile(
-                    leading: const Icon(Icons.settings, color: Color(0xFF6B6862)),
+                    leading: const Icon(
+                      Icons.settings,
+                      color: Color(0xFF6B6862),
+                    ),
                     title: const Text('Settings'),
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Settings feature coming soon!')),
+                        const SnackBar(
+                          content: Text('Settings feature coming soon!'),
+                        ),
                       );
                     },
                   ),

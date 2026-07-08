@@ -7,22 +7,23 @@ class AuthRepositoryImpl implements AuthRepository {
   final SupabaseRemoteDatasource _supabaseRemoteDatasource;
   final SessionDatasource _sessionDatasource;
 
-  AuthRepositoryImpl(
-    this._supabaseRemoteDatasource,
-    this._sessionDatasource,
-  );
+  AuthRepositoryImpl(this._supabaseRemoteDatasource, this._sessionDatasource);
 
   @override
   Future<bool> login(String username, String password) async {
     try {
-      final userData = await _supabaseRemoteDatasource.getUserByUsername(username);
+      final userData = await _supabaseRemoteDatasource.getUserByUsername(
+        username,
+      );
       if (userData != null) {
         final storedPassword = userData['password_hash'] as String;
         if (storedPassword == password) {
           final userId = userData['id'] as String;
+          final role = userData['role'] as String? ?? 'mahasiswa';
           await _sessionDatasource.saveSession(
             userId: userId,
             username: username,
+            role: role,
           );
           return true;
         }
@@ -36,7 +37,9 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<bool> register(String username, String email, String password) async {
     try {
-      final existingUser = await _supabaseRemoteDatasource.getUserByUsername(username);
+      final existingUser = await _supabaseRemoteDatasource.getUserByUsername(
+        username,
+      );
       if (existingUser != null) {
         return false; // Username already taken
       }
@@ -46,7 +49,9 @@ class AuthRepositoryImpl implements AuthRepository {
         'id': userId,
         'username': username,
         'email': email,
-        'password_hash': password, // Storing password directly for simplicity in student project
+        'password_hash':
+            password, // Storing password directly for simplicity in student project
+        'role': 'mahasiswa',
         'created_at': DateTime.now().toIso8601String(),
       };
 
@@ -70,8 +75,40 @@ class AuthRepositoryImpl implements AuthRepository {
       await _sessionDatasource.saveSession(
         userId: userId,
         username: username,
+        role: 'mahasiswa',
       );
 
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<bool> registerDosen(
+    String username,
+    String email,
+    String password,
+  ) async {
+    try {
+      final existingUser = await _supabaseRemoteDatasource.getUserByUsername(
+        username,
+      );
+      if (existingUser != null) {
+        return false; // Username already taken
+      }
+
+      final userId = const Uuid().v4();
+      final userData = {
+        'id': userId,
+        'username': username,
+        'email': email,
+        'password_hash': password,
+        'role': 'dosen',
+        'created_at': DateTime.now().toIso8601String(),
+      };
+
+      await _supabaseRemoteDatasource.insertUser(userData);
       return true;
     } catch (_) {
       return false;
@@ -96,5 +133,10 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   String? getUsername() {
     return _sessionDatasource.getUsername();
+  }
+
+  @override
+  String? getRole() {
+    return _sessionDatasource.getRole();
   }
 }

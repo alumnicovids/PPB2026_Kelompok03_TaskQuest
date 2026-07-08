@@ -65,9 +65,15 @@ class _LoginScreenState extends State<LoginScreen> {
       final userId = authProvider.userId;
       if (userId != null) {
         // Load user-specific data
-        await Provider.of<CharacterProvider>(context, listen: false).loadCharacter(userId);
+        await Provider.of<CharacterProvider>(
+          context,
+          listen: false,
+        ).loadCharacter(userId);
         if (mounted) {
-          await Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
+          await Provider.of<TaskProvider>(
+            context,
+            listen: false,
+          ).loadTasks(userId);
         }
       }
       if (mounted) {
@@ -103,8 +109,8 @@ class _LoginScreenState extends State<LoginScreen> {
               Text(
                 'TaskQuest',
                 style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: const Color(0xFFC15F3C),
-                    ),
+                  color: const Color(0xFFC15F3C),
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
@@ -173,9 +179,11 @@ class _LoginScreenState extends State<LoginScreen> {
                     _errorMessage = null;
                   });
                 },
-                child: Text(_isRegisterMode
-                    ? 'Already have an account? Login here'
-                    : "Don't have an account? Register here"),
+                child: Text(
+                  _isRegisterMode
+                      ? 'Already have an account? Login here'
+                      : "Don't have an account? Register here",
+                ),
               ),
             ],
           ),

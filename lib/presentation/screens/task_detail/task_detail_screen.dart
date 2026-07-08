@@ -45,7 +45,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   Future<void> _completeQuest(Task task) async {
     if (task.proofPhotoPath == null && _localPhotoPath == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please capture or select a photo proof first!')),
+        const SnackBar(
+          content: Text('Please capture or select a photo proof first!'),
+        ),
       );
       return;
     }
@@ -63,13 +65,18 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       );
 
       // 1. Update task in TaskProvider
-      await Provider.of<TaskProvider>(context, listen: false).updateTask(updatedTask);
+      await Provider.of<TaskProvider>(
+        context,
+        listen: false,
+      ).updateTask(updatedTask);
 
       if (!mounted) return;
 
       // 2. Add XP in CharacterProvider
-      final result = await Provider.of<CharacterProvider>(context, listen: false)
-          .completeTask(updatedTask, completedAt);
+      final result = await Provider.of<CharacterProvider>(
+        context,
+        listen: false,
+      ).completeTask(updatedTask, completedAt);
 
       final xpGained = result['xpGained'] as int;
       final leveledUp = result['leveledUp'] as bool;
@@ -85,7 +92,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             title: Row(
               children: [
                 Icon(
-                  leveledUp ? Icons.celebration_rounded : Icons.offline_bolt_rounded,
+                  leveledUp
+                      ? Icons.celebration_rounded
+                      : Icons.offline_bolt_rounded,
                   color: const Color(0xFFC15F3C),
                 ),
                 const SizedBox(width: 8),
@@ -99,7 +108,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                 Text('XP Gained: +$xpGained XP'),
                 if (leveledUp) ...[
                   const SizedBox(height: 8),
-                  const Text('Congratulations! Your character has grown stronger!'),
+                  const Text(
+                    'Congratulations! Your character has grown stronger!',
+                  ),
                   const SizedBox(height: 8),
                   const Text(
                     'Tip: Rotate your phone to control the level-up energy!',
@@ -130,9 +141,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       );
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to complete quest: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to complete quest: $e')));
       }
     } finally {
       if (mounted) {
@@ -156,7 +167,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFB3492F)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFB3492F),
+            ),
             child: const Text('Abandon'),
           ),
         ],
@@ -168,18 +181,21 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         _isProcessing = true;
       });
       try {
-        await Provider.of<TaskProvider>(context, listen: false).deleteTask(widget.taskId);
+        await Provider.of<TaskProvider>(
+          context,
+          listen: false,
+        ).deleteTask(widget.taskId);
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Quest abandoned.')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Quest abandoned.')));
           context.go('/tasks');
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to delete quest: $e')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Failed to delete quest: $e')));
         }
       } finally {
         if (mounted) {
@@ -194,7 +210,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final taskProvider = Provider.of<TaskProvider>(context);
-    final taskIndex = taskProvider.tasks.indexWhere((t) => t.id == widget.taskId);
+    final taskIndex = taskProvider.tasks.indexWhere(
+      (t) => t.id == widget.taskId,
+    );
 
     if (taskIndex == -1) {
       return Scaffold(
@@ -205,9 +223,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             onPressed: () => context.go('/tasks'),
           ),
         ),
-        body: const Center(
-          child: Text('Quest not found!'),
-        ),
+        body: const Center(child: Text('Quest not found!')),
       );
     }
 
@@ -258,7 +274,12 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                   const SizedBox(height: 16),
                   const Divider(),
                   const SizedBox(height: 16),
-                  _buildDetailRow(context, 'Category', task.category.toUpperCase(), Icons.school),
+                  _buildDetailRow(
+                    context,
+                    'Category',
+                    task.category.toUpperCase(),
+                    Icons.school,
+                  ),
                   const SizedBox(height: 12),
                   _buildDetailRow(
                     context,
@@ -290,7 +311,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     Icons.bolt,
                     color: const Color(0xFFC48A2D),
                   ),
-                  if (task.description != null && task.description!.isNotEmpty) ...[
+                  if (task.description != null &&
+                      task.description!.isNotEmpty) ...[
                     const SizedBox(height: 24),
                     Text(
                       'Description',
@@ -324,13 +346,24 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                     displayPhotoPath,
                                     fit: BoxFit.cover,
                                     width: double.infinity,
-                                    errorBuilder: (context, error, stackTrace) => const Center(
-                                      child: Icon(Icons.broken_image, size: 40, color: Color(0xFFB3492F)),
-                                    ),
-                                    loadingBuilder: (context, child, loadingProgress) {
-                                      if (loadingProgress == null) return child;
-                                      return const Center(child: CircularProgressIndicator());
-                                    },
+                                    errorBuilder:
+                                        (context, error, stackTrace) =>
+                                            const Center(
+                                              child: Icon(
+                                                Icons.broken_image,
+                                                size: 40,
+                                                color: Color(0xFFB3492F),
+                                              ),
+                                            ),
+                                    loadingBuilder:
+                                        (context, child, loadingProgress) {
+                                          if (loadingProgress == null) {
+                                            return child;
+                                          }
+                                          return const Center(
+                                            child: CircularProgressIndicator(),
+                                          );
+                                        },
                                   )
                                 : Image.file(
                                     File(displayPhotoPath),
@@ -342,7 +375,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.camera_alt, size: 40, color: Color(0xFF6B6862)),
+                                Icon(
+                                  Icons.camera_alt,
+                                  size: 40,
+                                  color: Color(0xFF6B6862),
+                                ),
                                 SizedBox(height: 8),
                                 Text(
                                   'No photo captured yet',
@@ -375,7 +412,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     ),
                     const SizedBox(height: 16),
                     ElevatedButton.icon(
-                      onPressed: _isProcessing ? null : () => _completeQuest(task),
+                      onPressed: _isProcessing
+                          ? null
+                          : () => _completeQuest(task),
                       icon: const Icon(Icons.check_circle),
                       label: const Text('Complete Quest'),
                     ),

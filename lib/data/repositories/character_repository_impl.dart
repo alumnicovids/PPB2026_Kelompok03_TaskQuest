@@ -19,7 +19,9 @@ class CharacterRepositoryImpl implements CharacterRepository {
   @override
   Future<Character?> getCharacter(String userId) async {
     try {
-      final remoteData = await _supabaseRemoteDatasource.getCharacterByUserId(userId);
+      final remoteData = await _supabaseRemoteDatasource.getCharacterByUserId(
+        userId,
+      );
       if (remoteData != null) {
         final character = CharacterModel.fromMap(remoteData);
         // Cache locally
@@ -34,10 +36,13 @@ class CharacterRepositoryImpl implements CharacterRepository {
     }
 
     // Fallback to local SharedPreferences cache
-    final localJson = _sharedPreferences.getString('$_characterCacheKeyPrefix$userId');
+    final localJson = _sharedPreferences.getString(
+      '$_characterCacheKeyPrefix$userId',
+    );
     if (localJson != null) {
       try {
-        final Map<String, dynamic> decoded = jsonDecode(localJson) as Map<String, dynamic>;
+        final Map<String, dynamic> decoded =
+            jsonDecode(localJson) as Map<String, dynamic>;
         return CharacterModel.fromMap(decoded);
       } catch (_) {
         return null;

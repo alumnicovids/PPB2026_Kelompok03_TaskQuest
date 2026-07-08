@@ -33,7 +33,8 @@ class LevelUpScreen extends StatefulWidget {
   State<LevelUpScreen> createState() => _LevelUpScreenState();
 }
 
-class _LevelUpScreenState extends State<LevelUpScreen> with TickerProviderStateMixin {
+class _LevelUpScreenState extends State<LevelUpScreen>
+    with TickerProviderStateMixin {
   late AnimationController _animationController;
   final List<Particle> _particles = [];
   final Random _random = Random();
@@ -173,7 +174,7 @@ class _LevelUpScreenState extends State<LevelUpScreen> with TickerProviderStateM
                           color: const Color(0xFFC15F3C).withAlpha(50),
                           blurRadius: 25,
                           spreadRadius: 5,
-                        )
+                        ),
                       ],
                     ),
                     child: Column(
@@ -264,7 +265,10 @@ class _LevelUpScreenState extends State<LevelUpScreen> with TickerProviderStateM
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(0xFFC15F3C),
                             foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 14),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 40,
+                              vertical: 14,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),

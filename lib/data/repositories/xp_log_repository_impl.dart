@@ -48,7 +48,9 @@ class XpLogRepositoryImpl implements XpLogRepository {
     for (final data in remoteLogsData) {
       final remoteLog = XpLogModel.fromMap(data);
       // Save/cache locally
-      await _sqliteXpLogDatasource.insertXpLog(XpLogModel.fromEntity(remoteLog));
+      await _sqliteXpLogDatasource.insertXpLog(
+        XpLogModel.fromEntity(remoteLog),
+      );
       await _sqliteXpLogDatasource.markAsSynced(remoteLog.id);
     }
   }

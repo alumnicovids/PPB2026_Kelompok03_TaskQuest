@@ -39,7 +39,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
       final userId = authProvider.userId;
       if (userId != null) {
-        Provider.of<CharacterProvider>(context, listen: false).loadCharacter(userId);
+        Provider.of<CharacterProvider>(
+          context,
+          listen: false,
+        ).loadCharacter(userId);
         Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
       }
     });
@@ -51,7 +54,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _isLoadingQuote = true;
     });
     try {
-      final quotesDatasource = Provider.of<QuotesDatasource>(context, listen: false);
+      final quotesDatasource = Provider.of<QuotesDatasource>(
+        context,
+        listen: false,
+      );
       final quote = await quotesDatasource.getRandomQuote();
       if (mounted) {
         setState(() {
@@ -94,7 +100,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
       await Provider.of<TaskProvider>(context, listen: false).syncTasks(userId);
       if (mounted) {
-        await Provider.of<CharacterProvider>(context, listen: false).loadCharacter(userId);
+        await Provider.of<CharacterProvider>(
+          context,
+          listen: false,
+        ).loadCharacter(userId);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Data synced successfully!')),
@@ -157,9 +166,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   Text(
                     'Welcome back, $username!',
                     style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                          fontSize: 24,
-                          color: const Color(0xFFC15F3C),
-                        ),
+                      fontSize: 24,
+                      color: const Color(0xFFC15F3C),
+                    ),
                   ),
                   const SizedBox(height: 16),
 
@@ -183,9 +192,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Icon(
                                 character.classType.toLowerCase() == 'mage'
                                     ? Icons.auto_stories_rounded
-                                    : character.classType.toLowerCase() == 'archer'
-                                        ? Icons.gps_fixed_rounded
-                                        : Icons.shield_rounded,
+                                    : character.classType.toLowerCase() ==
+                                          'archer'
+                                    ? Icons.gps_fixed_rounded
+                                    : Icons.shield_rounded,
                                 size: 40,
                                 color: const Color(0xFFC15F3C),
                               ),
@@ -197,12 +207,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 children: [
                                   Text(
                                     '${character.classType[0].toUpperCase()}${character.classType.substring(1)} Hero',
-                                    style: Theme.of(context).textTheme.displaySmall,
+                                    style: Theme.of(
+                                      context,
+                                    ).textTheme.displaySmall,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     'Level ${character.level} (Stage ${character.appearanceStage})',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodyMedium
+                                        ?.copyWith(
                                           color: const Color(0xFF6B6862),
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -213,15 +228,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     children: [
                                       Expanded(
                                         child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(4),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                           child: LinearProgressIndicator(
                                             value: character.xpToNextLevel > 0
-                                                ? character.currentXp / character.xpToNextLevel
+                                                ? character.currentXp /
+                                                      character.xpToNextLevel
                                                 : 0.0,
-                                            backgroundColor: const Color(0xFFEDE9DE),
-                                            valueColor: const AlwaysStoppedAnimation<Color>(
-                                              Color(0xFFC15F3C),
+                                            backgroundColor: const Color(
+                                              0xFFEDE9DE,
                                             ),
+                                            valueColor:
+                                                const AlwaysStoppedAnimation<
+                                                  Color
+                                                >(Color(0xFFC15F3C)),
                                             minHeight: 8,
                                           ),
                                         ),
@@ -264,7 +285,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 children: [
                                   const Text(
                                     'Gyroscope Active',
-                                    style: TextStyle(fontWeight: FontWeight.bold),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
                                   Text(
                                     'x: ${_gyroscopeService.x.toStringAsFixed(2)}  '
@@ -360,7 +383,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   // Simulate Level Up (if they want to test the overlay)
                   ElevatedButton.icon(
-                    onPressed: () => _triggerLevelUpOverlay((character?.level ?? 1) + 1, 35),
+                    onPressed: () =>
+                        _triggerLevelUpOverlay((character?.level ?? 1) + 1, 35),
                     icon: const Icon(Icons.auto_awesome),
                     label: const Text('Simulate Level Up!'),
                     style: ElevatedButton.styleFrom(
