@@ -1,3 +1,4 @@
+import 'dart:io';
 import '../../domain/entities/task.dart';
 import '../../domain/repositories/task_repository.dart';
 import '../datasources/local/sqlite_task_datasource.dart';
@@ -22,8 +23,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
     // Try to sync to Supabase remote database
     try {
-      await _supabaseRemoteDatasource.upsertTask(taskModel.toSupabaseMap());
-      await _sqliteTaskDatasource.markAsSynced(task.id);
+      await _syncSingleTaskToRemote(taskModel);
     } catch (_) {
       // Offline-first: ignore connection errors, task is saved locally
     }
@@ -49,8 +49,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
     // Try to sync to Supabase remote database
     try {
-      await _supabaseRemoteDatasource.upsertTask(taskModel.toSupabaseMap());
-      await _sqliteTaskDatasource.markAsSynced(task.id);
+      await _syncSingleTaskToRemote(taskModel);
     } catch (_) {
       // Offline-first: ignore connection errors, task remains unsynced
     }
@@ -74,8 +73,7 @@ class TaskRepositoryImpl implements TaskRepository {
     // 1. Push all unsynced local tasks to remote Supabase
     final unsyncedTasks = await _sqliteTaskDatasource.getUnsyncedTasks(userId);
     for (final task in unsyncedTasks) {
-      await _supabaseRemoteDatasource.upsertTask(task.toSupabaseMap());
-      await _sqliteTaskDatasource.markAsSynced(task.id);
+      await _syncSingleTaskToRemote(task);
     }
 
     // 2. Pull remote tasks from Supabase and cache/save to local SQLite
@@ -84,5 +82,20 @@ class TaskRepositoryImpl implements TaskRepository {
       final remoteTask = TaskModel.fromMap(data).copyWith(isSynced: true);
       await _sqliteTaskDatasource.insertTask(TaskModel.fromEntity(remoteTask));
     }
+  }
+
+  Future<void> _syncSingleTaskToRemote(TaskModel taskModel) async {
+    final localPath = taskModel.proofPhotoPath;
+    final uploadMap = taskModel.toSupabaseMap();
+
+    if (localPath != null && !localPath.startsWith('http') && File(localPath).existsSync()) {
+      final fileExtension = localPath.split('.').last;
+      final fileName = '${taskModel.id}_proof.$fileExtension';
+      final publicUrl = await _supabaseRemoteDatasource.uploadTaskProof(localPath, fileName);
+      uploadMap['proof_photo_path'] = publicUrl;
+    }
+
+    await _supabaseRemoteDatasource.upsertTask(uploadMap);
+    await _sqliteTaskDatasource.markAsSynced(taskModel.id);
   }
 }

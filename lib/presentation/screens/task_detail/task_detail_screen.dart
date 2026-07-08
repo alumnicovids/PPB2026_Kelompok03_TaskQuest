@@ -319,11 +319,24 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     child: displayPhotoPath != null
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(12),
-                            child: Image.file(
-                              File(displayPhotoPath),
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                            ),
+                            child: displayPhotoPath.startsWith('http')
+                                ? Image.network(
+                                    displayPhotoPath,
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                    errorBuilder: (context, error, stackTrace) => const Center(
+                                      child: Icon(Icons.broken_image, size: 40, color: Color(0xFFB3492F)),
+                                    ),
+                                    loadingBuilder: (context, child, loadingProgress) {
+                                      if (loadingProgress == null) return child;
+                                      return const Center(child: CircularProgressIndicator());
+                                    },
+                                  )
+                                : Image.file(
+                                    File(displayPhotoPath),
+                                    fit: BoxFit.cover,
+                                    width: double.infinity,
+                                  ),
                           )
                         : const Center(
                             child: Column(

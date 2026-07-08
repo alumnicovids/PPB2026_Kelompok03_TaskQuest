@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseRemoteDatasource {
@@ -73,5 +74,14 @@ class SupabaseRemoteDatasource {
 
   Future<void> insertXpLog(Map<String, dynamic> xpLogData) async {
     await _supabaseClient.from('xp_logs').insert(xpLogData);
+  }
+
+  // === Storage Upload ===
+  Future<String> uploadTaskProof(String localPath, String fileName) async {
+    final file = File(localPath);
+    await _supabaseClient.storage
+        .from('task-proofs')
+        .upload(fileName, file, fileOptions: const FileOptions(upsert: true));
+    return _supabaseClient.storage.from('task-proofs').getPublicUrl(fileName);
   }
 }
