@@ -12,6 +12,7 @@ class Task {
   final DateTime? completedAt;
   final DateTime createdAt;
   final bool isSynced;
+  final String? studentUsername;
 
   const Task({
     required this.id,
@@ -27,6 +28,7 @@ class Task {
     this.completedAt,
     required this.createdAt,
     required this.isSynced,
+    this.studentUsername,
   });
 
   Task copyWith({
@@ -43,6 +45,7 @@ class Task {
     DateTime? completedAt,
     DateTime? createdAt,
     bool? isSynced,
+    String? studentUsername,
   }) {
     return Task(
       id: id ?? this.id,
@@ -58,6 +61,7 @@ class Task {
       completedAt: completedAt ?? this.completedAt,
       createdAt: createdAt ?? this.createdAt,
       isSynced: isSynced ?? this.isSynced,
+      studentUsername: studentUsername ?? this.studentUsername,
     );
   }
 }
