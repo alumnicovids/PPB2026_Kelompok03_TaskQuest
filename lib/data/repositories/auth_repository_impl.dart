@@ -131,13 +131,13 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<List<UserEntity>> getAllUsers() async {
     final rawUsers = await _supabaseRemoteDatasource.getAllUsers();
-    return rawUsers.map((map) => UserModel.fromMap(map)).toList();
+    return rawUsers.map<UserEntity>((map) => UserModel.fromMap(map)).toList();
   }
 
   @override
   Future<List<UserEntity>> getUsersByRole(String role) async {
     final rawUsers = await _supabaseRemoteDatasource.getUsersByRole(role);
-    return rawUsers.map((map) => UserModel.fromMap(map)).toList();
+    return rawUsers.map<UserEntity>((map) => UserModel.fromMap(map)).toList();
   }
 
   @override

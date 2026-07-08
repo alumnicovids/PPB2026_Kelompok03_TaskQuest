@@ -538,18 +538,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ),
                   const SizedBox(height: 24),
 
-                  // Simulate Level Up (if they want to test the overlay)
-                  ElevatedButton.icon(
-                    onPressed: () =>
-                        _triggerLevelUpOverlay((character?.level ?? 1) + 1, 35),
-                    icon: const Icon(Icons.auto_awesome),
-                    label: const Text('Simulate Level Up!'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4E7A51),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-
                   // Call to Action
                   ElevatedButton.icon(
                     onPressed: () => context.go('/tasks'),

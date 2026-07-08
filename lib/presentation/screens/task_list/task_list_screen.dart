@@ -14,6 +14,8 @@ class TaskListScreen extends StatefulWidget {
 }
 
 class _TaskListScreenState extends State<TaskListScreen> {
+  String _statusFilter = 'all';
+
   @override
   void initState() {
     super.initState();
@@ -228,29 +230,10 @@ class _TaskListScreenState extends State<TaskListScreen> {
 
                       try {
                         if (role == 'mahasiswa') {
-                          await taskProv.addTask(Task(
-                            id: const Uuid().v4(),
-                            userId: userId,
-                            title: title,
-                            description: desc,
-                            category: selectedCategory,
-                            priority: selectedPriority,
-                            deadline: selectedDeadline,
-                            status: 'pending',
-                            xpReward: baseXp,
-                            createdAt: DateTime.now(),
-                            isSynced: false,
-                          ));
-                        } else {
-                          final targets = selectedStudent == 'all'
-                              ? students
-                              : students
-                                    .where((s) => s.id == selectedStudent)
-                                    .toList();
-                          for (final student in targets) {
-                            await taskProv.addTask(Task(
+                          await taskProv.addTask(
+                            Task(
                               id: const Uuid().v4(),
-                              userId: student.id,
+                              userId: userId,
                               title: title,
                               description: desc,
                               category: selectedCategory,
@@ -260,7 +243,30 @@ class _TaskListScreenState extends State<TaskListScreen> {
                               xpReward: baseXp,
                               createdAt: DateTime.now(),
                               isSynced: false,
-                            ));
+                            ),
+                          );
+                        } else {
+                          final targets = selectedStudent == 'all'
+                              ? students
+                              : students
+                                    .where((s) => s.id == selectedStudent)
+                                    .toList();
+                          for (final student in targets) {
+                            await taskProv.addTask(
+                              Task(
+                                id: const Uuid().v4(),
+                                userId: student.id,
+                                title: title,
+                                description: desc,
+                                category: selectedCategory,
+                                priority: selectedPriority,
+                                deadline: selectedDeadline,
+                                status: 'pending',
+                                xpReward: baseXp,
+                                createdAt: DateTime.now(),
+                                isSynced: false,
+                              ),
+                            );
                           }
                           await taskProv.loadAllTasks();
                         }
@@ -291,6 +297,44 @@ class _TaskListScreenState extends State<TaskListScreen> {
     );
   }
 
+  Widget _buildFilterChips() {
+    final statuses = [
+      {'value': 'all', 'label': 'All'},
+      {'value': 'pending', 'label': 'Active'},
+      {'value': 'submitted', 'label': 'Pending Review'},
+      {'value': 'completed', 'label': 'Completed'},
+    ];
+
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: statuses.map((status) {
+          final isSelected = _statusFilter == status['value'];
+          return Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: ChoiceChip(
+              label: Text(status['label']!),
+              selected: isSelected,
+              selectedColor: const Color(0xFFC15F3C),
+              labelStyle: TextStyle(
+                color: isSelected ? Colors.white : const Color(0xFF6B6862),
+                fontWeight: FontWeight.bold,
+              ),
+              onSelected: (selected) {
+                if (selected) {
+                  setState(() {
+                    _statusFilter = status['value']!;
+                  });
+                }
+              },
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -309,32 +353,54 @@ class _TaskListScreenState extends State<TaskListScreen> {
       ),
       body: taskProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : taskProvider.tasks.isEmpty
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.assignment_outlined,
-                    size: 64,
-                    color: Color(0xFF6B6862),
-                  ),
-                  SizedBox(height: 16),
-                  Text(
-                    'No quests yet!\nTap + to add your first quest.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(color: Color(0xFF6B6862)),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16.0),
-              itemCount: taskProvider.tasks.length,
-              itemBuilder: (context, index) {
-                final task = taskProvider.tasks[index];
-                return _buildTaskCard(context, task, taskProvider);
-              },
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                _buildFilterChips(),
+                Expanded(
+                  child: () {
+                    final filteredTasks = taskProvider.tasks.where((task) {
+                      if (_statusFilter == 'all') return true;
+                      return task.status == _statusFilter;
+                    }).toList();
+
+                    if (filteredTasks.isEmpty) {
+                      return Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.assignment_outlined,
+                              size: 64,
+                              color: Color(0xFF6B6862),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              _statusFilter == 'all'
+                                  ? 'No quests yet!\nTap + to add your first quest.'
+                                  : 'No quests match this filter.',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(color: Color(0xFF6B6862)),
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+
+                    return ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      itemCount: filteredTasks.length,
+                      itemBuilder: (context, index) {
+                        final task = filteredTasks[index];
+                        return _buildTaskCard(context, task, taskProvider);
+                      },
+                    );
+                  }(),
+                ),
+              ],
             ),
       floatingActionButton: (userId == null || authProvider.role == 'mahasiswa')
           ? null
@@ -372,8 +438,6 @@ class _TaskListScreenState extends State<TaskListScreen> {
     Task task,
     TaskProvider provider,
   ) {
-    final isCompleted = task.status == 'completed';
-
     Color priorityColor;
     switch (task.priority.toLowerCase()) {
       case 'high':
@@ -385,6 +449,28 @@ class _TaskListScreenState extends State<TaskListScreen> {
       default:
         priorityColor = const Color(0xFF4E7A51);
     }
+
+    Color statusColor;
+    String statusText;
+    IconData leadingIcon;
+    switch (task.status.toLowerCase()) {
+      case 'completed':
+        statusColor = const Color(0xFF4E7A51);
+        statusText = 'APPROVED';
+        leadingIcon = Icons.check_circle_rounded;
+        break;
+      case 'submitted':
+        statusColor = const Color(0xFFC48A2D);
+        statusText = 'PENDING REVIEW';
+        leadingIcon = Icons.hourglass_empty_rounded;
+        break;
+      default:
+        statusColor = const Color(0xFF6B6862);
+        statusText = 'IN PROGRESS';
+        leadingIcon = Icons.radio_button_unchecked_rounded;
+    }
+
+    final isCompleted = task.status == 'completed';
 
     return Dismissible(
       key: Key(task.id),
@@ -426,12 +512,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
         margin: const EdgeInsets.only(bottom: 12),
         child: ListTile(
           onTap: () => context.go('/tasks/${task.id}'),
-          leading: Icon(
-            isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-            color: isCompleted
-                ? const Color(0xFF4E7A51)
-                : const Color(0xFF6B6862),
-          ),
+          leading: Icon(leadingIcon, color: statusColor),
           title: Text(
             task.title,
             style: TextStyle(
@@ -440,21 +521,44 @@ class _TaskListScreenState extends State<TaskListScreen> {
             ),
           ),
           subtitle: Text('${task.category} · ${task.xpReward} XP'),
-          trailing: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: priorityColor.withAlpha(26),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: priorityColor, width: 0.5),
-            ),
-            child: Text(
-              task.priority.toUpperCase(),
-              style: TextStyle(
-                color: priorityColor,
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
+          trailing: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: priorityColor.withAlpha(26),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: priorityColor, width: 0.5),
+                ),
+                child: Text(
+                  task.priority.toUpperCase(),
+                  style: TextStyle(
+                    color: priorityColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
-            ),
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: statusColor.withAlpha(26),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: statusColor, width: 0.5),
+                ),
+                child: Text(
+                  statusText,
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 9,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

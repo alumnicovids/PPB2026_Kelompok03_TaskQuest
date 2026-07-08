@@ -29,6 +29,8 @@ import 'presentation/providers/auth_provider.dart';
 import 'presentation/providers/character_provider.dart';
 import 'presentation/providers/task_provider.dart';
 
+import 'presentation/providers/theme_provider.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -105,6 +107,7 @@ void main() async {
         Provider<LocationRepository>.value(value: locationRepository),
         Provider<XpLogRepository>.value(value: xpLogRepository),
         Provider<QuotesDatasource>.value(value: quotesDatasource),
+        ChangeNotifierProvider(create: (_) => ThemeProvider(sharedPreferences)),
         ChangeNotifierProvider(create: (_) => AuthProvider(authRepository)),
         ChangeNotifierProvider(create: (_) => TaskProvider(taskRepository)),
         ChangeNotifierProvider(
@@ -126,11 +129,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return MaterialApp.router(
       title: AppConstants.appName,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: themeProvider.themeMode,
       routerConfig: AppRouter.router,
     );
   }

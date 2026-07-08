@@ -72,7 +72,9 @@ class CharacterRepositoryImpl implements CharacterRepository {
   @override
   Future<List<Character>> getAllCharacters() async {
     final rawList = await _supabaseRemoteDatasource.getAllCharacters();
-    return rawList.map((map) => CharacterModel.fromMap(map)).toList();
+    return rawList
+        .map<Character>((map) => CharacterModel.fromMap(map))
+        .toList();
   }
 
   @override

@@ -100,11 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     title: const Text('Settings'),
                     onTap: () {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Settings feature coming soon!'),
-                        ),
-                      );
+                      context.push('/settings');
                     },
                   ),
                   const Spacer(),

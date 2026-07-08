@@ -113,6 +113,7 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
                   '$studentsCount',
                   Icons.people_alt_rounded,
                   const Color(0xFFC15F3C),
+                  onTap: () => context.go('/students'),
                 ),
               ),
               const SizedBox(width: 12),
@@ -123,6 +124,7 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
                   '${submittedTasks.length}',
                   Icons.rate_review_rounded,
                   const Color(0xFFC48A2D),
+                  onTap: () => context.go('/review-submissions'),
                 ),
               ),
             ],
@@ -141,18 +143,30 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
                 child: ElevatedButton.icon(
                   onPressed: () => context.go('/students'),
                   icon: const Icon(Icons.people_alt_rounded),
-                  label: const Text('Students list'),
+                  label: const Text('Students'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: () => context.go('/review-submissions'),
+                  icon: const Icon(Icons.rate_review_rounded),
+                  label: const Text('Review'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFC48A2D),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => context.go('/tasks'),
                   icon: const Icon(Icons.add_box_rounded),
-                  label: const Text('Create Quest'),
+                  label: const Text('Create'),
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
@@ -236,33 +250,38 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
     String title,
     String value,
     IconData icon,
-    Color color,
-  ) {
+    Color color, {
+    VoidCallback? onTap,
+  }) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 12),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                fontSize: 28,
-                color: const Color(0xFF2D2B26),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(icon, color: color, size: 28),
+              const SizedBox(height: 12),
+              Text(
+                value,
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                  fontSize: 28,
+                  color: const Color(0xFF2D2B26),
+                ),
               ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF6B6862),
-                fontWeight: FontWeight.bold,
+              const SizedBox(height: 4),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF6B6862),
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -359,35 +378,62 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
               ],
             ),
             if (task.proofPhotoPath != null) ...[
-              const Divider(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  OutlinedButton.icon(
-                    onPressed: _isProcessing ? null : () => _handleReject(task),
-                    icon: const Icon(Icons.close, color: Color(0xFFB3492F)),
-                    label: const Text(
-                      'Reject',
-                      style: TextStyle(color: Color(0xFFB3492F)),
-                    ),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: Color(0xFFB3492F)),
+              const Divider(height: 12),
+              const Text(
+                'Submission Proof:',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF2D2B26),
+                ),
+              ),
+              const SizedBox(height: 6),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: Image.network(
+                  task.proofPhotoPath!,
+                  height: 120,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) => Container(
+                    height: 80,
+                    color: const Color(0xFFEDE9DE),
+                    child: const Center(
+                      child: Icon(
+                        Icons.broken_image_rounded,
+                        color: Color(0xFFB3492F),
+                      ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  ElevatedButton.icon(
-                    onPressed: _isProcessing
-                        ? null
-                        : () => _handleApprove(task),
-                    icon: const Icon(Icons.check),
-                    label: const Text('Approve'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF4E7A51),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
+            const Divider(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: _isProcessing ? null : () => _handleReject(task),
+                  icon: const Icon(Icons.close, color: Color(0xFFB3492F)),
+                  label: const Text(
+                    'Reject',
+                    style: TextStyle(color: Color(0xFFB3492F)),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: const BorderSide(color: Color(0xFFB3492F)),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                ElevatedButton.icon(
+                  onPressed: _isProcessing ? null : () => _handleApprove(task),
+                  icon: const Icon(Icons.check),
+                  label: const Text('Approve'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF4E7A51),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

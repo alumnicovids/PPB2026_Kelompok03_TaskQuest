@@ -1,6 +1,8 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:taskquest/main.dart';
+import 'package:taskquest/presentation/providers/theme_provider.dart';
 import 'package:taskquest/domain/repositories/task_repository.dart';
 import 'package:taskquest/domain/repositories/auth_repository.dart';
 import 'package:taskquest/domain/repositories/character_repository.dart';
@@ -116,6 +118,10 @@ void main() {
   testWidgets('App renders login screen initially', (
     WidgetTester tester,
   ) async {
+    SharedPreferences.setMockInitialValues({});
+    final sharedPrefs = await SharedPreferences.getInstance();
+    final themeProvider = ThemeProvider(sharedPrefs);
+
     final taskRepo = FakeTaskRepository();
     final authRepo = FakeAuthRepository();
     final charRepo = FakeCharacterRepository();
@@ -132,6 +138,7 @@ void main() {
           Provider<LocationRepository>.value(value: locRepo),
           Provider<XpLogRepository>.value(value: xpLogRepo),
           Provider<QuotesDatasource>.value(value: quotesDS),
+          ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
           ChangeNotifierProvider(create: (_) => AuthProvider(authRepo)),
           ChangeNotifierProvider(create: (_) => TaskProvider(taskRepo)),
           ChangeNotifierProvider(

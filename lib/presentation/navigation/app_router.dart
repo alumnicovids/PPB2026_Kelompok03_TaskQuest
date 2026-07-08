@@ -11,6 +11,7 @@ import '../screens/student_list/student_list_screen.dart';
 import '../screens/admin/register_dosen_screen.dart';
 import '../screens/admin/character_avatar_manager_screen.dart';
 import '../screens/review/review_submissions_screen.dart';
+import '../screens/settings/settings_screen.dart';
 
 class AppRouter {
   static final GoRouter router = GoRouter(
@@ -63,6 +64,10 @@ class AppRouter {
       GoRoute(
         path: '/review-submissions',
         builder: (context, state) => const ReviewSubmissionsScreen(),
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );

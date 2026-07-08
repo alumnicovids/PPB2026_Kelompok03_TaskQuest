@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../../data/datasources/local/camera_datasource.dart';
 import '../../../domain/entities/task.dart';
+import '../../../domain/entities/user_entity.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/task_provider.dart';
 
@@ -116,11 +117,19 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
   }
 
   Future<void> _deleteQuest() async {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final isDosenOrAdmin =
+        authProvider.role == 'dosen' || authProvider.role == 'superadmin';
+
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Quest'),
-        content: const Text('Are you sure you want to abandon this quest?'),
+        title: Text(isDosenOrAdmin ? 'Delete Quest' : 'Abandon Quest'),
+        content: Text(
+          isDosenOrAdmin
+              ? 'Are you sure you want to delete this quest?'
+              : 'Are you sure you want to abandon this quest?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
@@ -131,7 +140,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFB3492F),
             ),
-            child: const Text('Abandon'),
+            child: Text(isDosenOrAdmin ? 'Delete' : 'Abandon'),
           ),
         ],
       ),
@@ -147,9 +156,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           listen: false,
         ).deleteTask(widget.taskId);
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Quest abandoned.')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                isDosenOrAdmin ? 'Quest deleted.' : 'Quest abandoned.',
+              ),
+            ),
+          );
           context.go('/tasks');
         }
       } catch (e) {
@@ -278,7 +291,11 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
             IconButton(
               icon: const Icon(Icons.delete_outline, color: Color(0xFFB3492F)),
               onPressed: _isProcessing ? null : _deleteQuest,
-              tooltip: 'Abandon Quest',
+              tooltip:
+                  (authProvider.role == 'dosen' ||
+                      authProvider.role == 'superadmin')
+                  ? 'Delete Quest'
+                  : 'Abandon Quest',
             ),
         ],
       ),
@@ -333,6 +350,23 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     Icons.bolt,
                     color: const Color(0xFFC48A2D),
                   ),
+                  if (authProvider.role == 'dosen' ||
+                      authProvider.role == 'superadmin') ...[
+                    const SizedBox(height: 12),
+                    _buildDetailRow(context, 'Student', () {
+                      final student = authProvider.users.firstWhere(
+                        (u) => u.id == task.userId,
+                        orElse: () => UserEntity(
+                          id: task.userId,
+                          username: task.studentUsername ?? 'Student',
+                          email: '',
+                          role: 'mahasiswa',
+                          createdAt: DateTime.now(),
+                        ),
+                      );
+                      return student.username;
+                    }(), Icons.person),
+                  ],
                   if (task.description != null &&
                       task.description!.isNotEmpty) ...[
                     const SizedBox(height: 24),
