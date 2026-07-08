@@ -150,4 +150,30 @@ class CharacterProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> updateCharacterDetails(Character character) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _characterRepository.saveCharacter(character);
+      if (_character?.userId == character.userId) {
+        _character = character;
+      }
+      await loadAllCharacters();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> uploadAvatarImage(String localPath, String fileName) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _characterRepository.uploadCharacterAvatar(localPath, fileName);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 }

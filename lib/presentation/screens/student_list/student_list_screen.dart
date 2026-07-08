@@ -144,11 +144,114 @@ class _StudentListScreenState extends State<StudentListScreen> {
     );
   }
 
+  void _showEditCharacterDialog(BuildContext context, Character character, String studentName) {
+    final formKey = GlobalKey<FormState>();
+    String selectedClass = character.classType;
+    final levelController = TextEditingController(text: '${character.level}');
+    final xpController = TextEditingController(text: '${character.currentXp}');
+    final stageController = TextEditingController(text: '${character.appearanceStage}');
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              title: Text('Edit Character: $studentName'),
+              content: Form(
+                key: formKey,
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        value: selectedClass,
+                        decoration: const InputDecoration(labelText: 'Class Type'),
+                        items: const [
+                          DropdownMenuItem(value: 'knight', child: Text('Knight')),
+                          DropdownMenuItem(value: 'mage', child: Text('Mage')),
+                          DropdownMenuItem(value: 'archer', child: Text('Archer')),
+                          DropdownMenuItem(value: 'assassin', child: Text('Assassin')),
+                        ],
+                        onChanged: (v) => setState(() => selectedClass = v!),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: levelController,
+                        decoration: const InputDecoration(labelText: 'Level'),
+                        keyboardType: TextInputType.number,
+                        validator: (v) => (v == null || int.tryParse(v) == null) ? 'Enter a valid number' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: xpController,
+                        decoration: const InputDecoration(labelText: 'Current XP'),
+                        keyboardType: TextInputType.number,
+                        validator: (v) => (v == null || int.tryParse(v) == null) ? 'Enter a valid number' : null,
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        controller: stageController,
+                        decoration: const InputDecoration(labelText: 'Appearance Stage (1-5)'),
+                        keyboardType: TextInputType.number,
+                        validator: (v) => (v == null || int.tryParse(v) == null) ? 'Enter a valid number' : null,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Cancel'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    if (formKey.currentState?.validate() ?? false) {
+                      final level = int.parse(levelController.text);
+                      final xp = int.parse(xpController.text);
+                      final stage = int.parse(stageController.text);
+
+                      final updatedChar = character.copyWith(
+                        classType: selectedClass,
+                        level: level,
+                        currentXp: xp,
+                        xpToNextLevel: 100 * level * level,
+                        appearanceStage: stage,
+                        updatedAt: DateTime.now(),
+                      );
+
+                      await Provider.of<CharacterProvider>(context, listen: false)
+                          .updateCharacterDetails(updatedChar);
+
+                      if (dialogContext.mounted) {
+                        Navigator.pop(dialogContext);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Character for $studentName updated successfully!'),
+                            backgroundColor: const Color(0xFF4E7A51),
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _buildStudentCard(
     BuildContext context,
     UserEntity student,
     Character character,
   ) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final isTeacherOrAdmin = authProvider.role == 'dosen' || authProvider.role == 'superadmin';
     final classType = character.classType.toLowerCase();
     final IconData classIcon = classType == 'mage'
         ? Icons.auto_stories_rounded
@@ -158,12 +261,14 @@ class _StudentListScreenState extends State<StudentListScreen> {
                 ? Icons.bolt_rounded
                 : Icons.shield_rounded;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
+    return GestureDetector(
+      onTap: isTeacherOrAdmin ? () => _showEditCharacterDialog(context, character, student.username) : null,
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 12),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
             // Class Avatar
             CircleAvatar(
               radius: 28,
@@ -267,6 +372,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

@@ -76,6 +76,8 @@ class FakeCharacterRepository implements CharacterRepository {
   Future<void> saveCharacter(Character character) async {}
   @override
   Future<List<Character>> getAllCharacters() async => [];
+  @override
+  Future<String> uploadCharacterAvatar(String localPath, String fileName) async => '';
 }
 
 class FakeLocationRepository implements LocationRepository {

@@ -9,6 +9,7 @@ import '../screens/level_up/level_up_screen.dart';
 import '../screens/locations/locations_map_screen.dart';
 import '../screens/student_list/student_list_screen.dart';
 import '../screens/admin/register_dosen_screen.dart';
+import '../screens/admin/character_avatar_manager_screen.dart';
 import '../screens/review/review_submissions_screen.dart';
 
 class AppRouter {
@@ -19,6 +20,10 @@ class AppRouter {
       GoRoute(
         path: '/setup-profile',
         builder: (context, state) => const SetupProfileScreen(),
+      ),
+      GoRoute(
+        path: '/character-avatars',
+        builder: (context, state) => const CharacterAvatarManagerScreen(),
       ),
       GoRoute(
         path: '/dashboard',

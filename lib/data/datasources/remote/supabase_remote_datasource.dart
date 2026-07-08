@@ -133,6 +133,14 @@ class SupabaseRemoteDatasource {
     return _supabaseClient.storage.from('task-proofs').getPublicUrl(fileName);
   }
 
+  Future<String> uploadCharacterAvatar(String localPath, String fileName) async {
+    final file = File(localPath);
+    await _supabaseClient.storage
+        .from('character-avatars')
+        .upload(fileName, file, fileOptions: const FileOptions(upsert: true));
+    return _supabaseClient.storage.from('character-avatars').getPublicUrl(fileName);
+  }
+
   // === Study Locations CRUD ===
   Future<List<Map<String, dynamic>>> getLocations(String userId) async {
     final response = await _supabaseClient

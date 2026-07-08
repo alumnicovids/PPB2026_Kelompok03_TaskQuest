@@ -74,4 +74,9 @@ class CharacterRepositoryImpl implements CharacterRepository {
     final rawList = await _supabaseRemoteDatasource.getAllCharacters();
     return rawList.map((map) => CharacterModel.fromMap(map)).toList();
   }
+
+  @override
+  Future<String> uploadCharacterAvatar(String localPath, String fileName) async {
+    return await _supabaseRemoteDatasource.uploadCharacterAvatar(localPath, fileName);
+  }
 }

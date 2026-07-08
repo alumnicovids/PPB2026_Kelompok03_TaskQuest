@@ -132,6 +132,46 @@ class _AdminDashboardBodyState extends State<AdminDashboardBody> {
               ),
             ),
           ),
+          const SizedBox(height: 16),
+
+          // Avatar Manager quick action
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.photo_library_rounded, color: Color(0xFFC15F3C)),
+                      SizedBox(width: 12),
+                      Text(
+                        'Avatar Asset Manager',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF2D2B26),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  const Text(
+                    'As SuperAdmin, you can upload and replace kustom class avatar files stored in the cloud.',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF6B6862),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => context.go('/character-avatars'),
+                    child: const Text('Manage Cloud Avatars'),
+                  ),
+                ],
+              ),
+            ),
+          ),
           const SizedBox(height: 24),
 
           // User Management section
