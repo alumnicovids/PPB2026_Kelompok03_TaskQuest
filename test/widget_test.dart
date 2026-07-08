@@ -14,6 +14,8 @@ import 'package:taskquest/domain/usecases/level_up_use_case.dart';
 import 'package:taskquest/domain/entities/task.dart';
 import 'package:taskquest/domain/entities/character.dart';
 import 'package:taskquest/domain/entities/study_location.dart';
+import 'package:taskquest/domain/entities/xp_log.dart';
+import 'package:taskquest/domain/repositories/xp_log_repository.dart';
 import 'package:http/http.dart' as http;
 
 class FakeTaskRepository implements TaskRepository {
@@ -62,12 +64,22 @@ class FakeLocationRepository implements LocationRepository {
   Future<void> deleteLocation(String id) async {}
 }
 
+class FakeXpLogRepository implements XpLogRepository {
+  @override
+  Future<void> saveXpLog(XpLog xpLog) async {}
+  @override
+  Future<List<XpLog>> getXpLogs(String userId) async => [];
+  @override
+  Future<void> syncXpLogs(String userId) async {}
+}
+
 void main() {
   testWidgets('App renders login screen initially', (WidgetTester tester) async {
     final taskRepo = FakeTaskRepository();
     final authRepo = FakeAuthRepository();
     final charRepo = FakeCharacterRepository();
     final locRepo = FakeLocationRepository();
+    final xpLogRepo = FakeXpLogRepository();
     final quotesDS = QuotesDatasource(http.Client());
 
     await tester.pumpWidget(
@@ -77,6 +89,7 @@ void main() {
           Provider<AuthRepository>.value(value: authRepo),
           Provider<CharacterRepository>.value(value: charRepo),
           Provider<LocationRepository>.value(value: locRepo),
+          Provider<XpLogRepository>.value(value: xpLogRepo),
           Provider<QuotesDatasource>.value(value: quotesDS),
           ChangeNotifierProvider(create: (_) => AuthProvider(authRepo)),
           ChangeNotifierProvider(create: (_) => TaskProvider(taskRepo)),
@@ -85,6 +98,7 @@ void main() {
               CalculateXpUseCase(),
               LevelUpUseCase(),
               charRepo,
+              xpLogRepo,
             ),
           ),
         ],

@@ -1,8 +1,11 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 import '../../domain/entities/character.dart';
 import '../../domain/entities/task.dart';
+import '../../domain/entities/xp_log.dart';
 import '../../domain/repositories/character_repository.dart';
+import '../../domain/repositories/xp_log_repository.dart';
 import '../../domain/usecases/calculate_xp_use_case.dart';
 import '../../domain/usecases/level_up_use_case.dart';
 
@@ -10,6 +13,7 @@ class CharacterProvider with ChangeNotifier {
   final CalculateXpUseCase _calculateXpUseCase;
   final LevelUpUseCase _levelUpUseCase;
   final CharacterRepository _characterRepository;
+  final XpLogRepository _xpLogRepository;
 
   Character? _character;
   bool _isLoading = false;
@@ -18,6 +22,7 @@ class CharacterProvider with ChangeNotifier {
     this._calculateXpUseCase,
     this._levelUpUseCase,
     this._characterRepository,
+    this._xpLogRepository,
   );
 
   Character? get character => _character;
@@ -107,6 +112,17 @@ class CharacterProvider with ChangeNotifier {
     // Save changes using repository
     await _characterRepository.saveCharacter(updatedChar);
     _character = updatedChar;
+
+    // Create and save XP Log
+    final xpLog = XpLog(
+      id: const Uuid().v4(),
+      userId: _character!.userId,
+      taskId: task.id,
+      xpAmount: xpGained,
+      reason: 'task_completed: ${task.title}',
+      createdAt: DateTime.now(),
+    );
+    await _xpLogRepository.saveXpLog(xpLog);
 
     _isLoading = false;
     notifyListeners();

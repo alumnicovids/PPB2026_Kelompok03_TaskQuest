@@ -8,6 +8,7 @@ import 'core/constants/app_constants.dart';
 import 'data/datasources/local/sqlite_helper.dart';
 import 'data/datasources/local/sqlite_task_datasource.dart';
 import 'data/datasources/local/sqlite_location_datasource.dart';
+import 'data/datasources/local/sqlite_xp_log_datasource.dart';
 import 'data/datasources/local/session_datasource.dart';
 import 'data/datasources/remote/supabase_remote_datasource.dart';
 import 'data/datasources/remote/quotes_datasource.dart';
@@ -15,10 +16,12 @@ import 'data/repositories/task_repository_impl.dart';
 import 'data/repositories/auth_repository_impl.dart';
 import 'data/repositories/character_repository_impl.dart';
 import 'data/repositories/location_repository_impl.dart';
+import 'data/repositories/xp_log_repository_impl.dart';
 import 'domain/repositories/task_repository.dart';
 import 'domain/repositories/auth_repository.dart';
 import 'domain/repositories/character_repository.dart';
 import 'domain/repositories/location_repository.dart';
+import 'domain/repositories/xp_log_repository.dart';
 import 'domain/usecases/calculate_xp_use_case.dart';
 import 'domain/usecases/level_up_use_case.dart';
 import 'presentation/navigation/app_router.dart';
@@ -53,6 +56,7 @@ void main() async {
   final sqliteHelper = SqliteHelper();
   final sqliteTaskDatasource = SqliteTaskDatasource(sqliteHelper);
   final sqliteLocationDatasource = SqliteLocationDatasource(sqliteHelper);
+  final sqliteXpLogDatasource = SqliteXpLogDatasource(sqliteHelper);
   final sessionDatasource = SessionDatasource(sharedPreferences);
   final httpClient = http.Client();
   final quotesDatasource = QuotesDatasource(httpClient);
@@ -83,6 +87,11 @@ void main() async {
     sqliteLocationDatasource,
   );
 
+  final xpLogRepository = XpLogRepositoryImpl(
+    sqliteXpLogDatasource,
+    supabaseRemoteDatasource,
+  );
+
   final calculateXpUseCase = CalculateXpUseCase();
   final levelUpUseCase = LevelUpUseCase();
 
@@ -93,6 +102,7 @@ void main() async {
         Provider<AuthRepository>.value(value: authRepository),
         Provider<CharacterRepository>.value(value: characterRepository),
         Provider<LocationRepository>.value(value: locationRepository),
+        Provider<XpLogRepository>.value(value: xpLogRepository),
         Provider<QuotesDatasource>.value(value: quotesDatasource),
         ChangeNotifierProvider(create: (_) => AuthProvider(authRepository)),
         ChangeNotifierProvider(create: (_) => TaskProvider(taskRepository)),
@@ -101,6 +111,7 @@ void main() async {
             calculateXpUseCase,
             levelUpUseCase,
             characterRepository,
+            xpLogRepository,
           ),
         ),
       ],
