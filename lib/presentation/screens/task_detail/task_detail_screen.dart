@@ -57,81 +57,40 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     });
 
     try {
-      final completedAt = DateTime.now();
       final updatedTask = task.copyWith(
-        status: 'completed',
-        completedAt: completedAt,
+        status: 'submitted',
         proofPhotoPath: _localPhotoPath ?? task.proofPhotoPath,
       );
 
       // 1. Update task in TaskProvider
-      await Provider.of<TaskProvider>(
-        context,
-        listen: false,
-      ).updateTask(updatedTask);
+      await Provider.of<TaskProvider>(context, listen: false).updateTask(updatedTask);
 
       if (!mounted) return;
 
-      // 2. Add XP in CharacterProvider
-      final result = await Provider.of<CharacterProvider>(
-        context,
-        listen: false,
-      ).completeTask(updatedTask, completedAt);
-
-      final xpGained = result['xpGained'] as int;
-      final leveledUp = result['leveledUp'] as bool;
-
-      if (!mounted) return;
-
-      // 3. Show dialog detailing rewards
+      // Show dialog detailing submission
       showDialog(
         context: context,
         barrierDismissible: false,
         builder: (dialogContext) {
           return AlertDialog(
-            title: Row(
+            title: const Row(
               children: [
                 Icon(
-                  leveledUp
-                      ? Icons.celebration_rounded
-                      : Icons.offline_bolt_rounded,
-                  color: const Color(0xFFC15F3C),
+                  Icons.send_rounded,
+                  color: Color(0xFFC15F3C),
                 ),
-                const SizedBox(width: 8),
-                Text(leveledUp ? 'Level Up!' : 'Quest Cleared!'),
+                SizedBox(width: 8),
+                Text('Quest Submitted!'),
               ],
             ),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('XP Gained: +$xpGained XP'),
-                if (leveledUp) ...[
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Congratulations! Your character has grown stronger!',
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tip: Rotate your phone to control the level-up energy!',
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      fontSize: 12,
-                      color: Color(0xFFC15F3C),
-                    ),
-                  ),
-                ],
-              ],
+            content: const Text(
+              'Your quest has been submitted for review. XP will be awarded once your lecturer approves the submission.',
             ),
             actions: [
-              ElevatedButton(
+              TextButton(
                 onPressed: () {
                   Navigator.pop(dialogContext);
-                  if (leveledUp) {
-                    context.go('/level-up');
-                  } else {
-                    context.go('/tasks');
-                  }
+                  context.go('/tasks');
                 },
                 child: const Text('OK'),
               ),
@@ -139,11 +98,13 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           );
         },
       );
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Failed to complete quest: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to submit quest. Please check connection.'),
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -204,11 +165,65 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           });
         }
       }
+  Future<void> _dosenApprove(Task task) async {
+    setState(() => _isProcessing = true);
+    try {
+      await Provider.of<TaskProvider>(context, listen: false)
+          .approveQuest(task.id, task.userId, task.xpReward);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Quest approved successfully!'),
+            backgroundColor: Color(0xFF4E7A51),
+          ),
+        );
+        context.go('/tasks');
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to approve quest.'),
+            backgroundColor: Color(0xFFB3492F),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
+    }
+  }
+
+  Future<void> _dosenReject(Task task) async {
+    setState(() => _isProcessing = true);
+    try {
+      await Provider.of<TaskProvider>(context, listen: false)
+          .rejectQuest(task.id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Quest rejected. Reverted to In Progress.'),
+            backgroundColor: Color(0xFFC48A2D),
+          ),
+        );
+        context.go('/tasks');
+      }
+    } catch (_) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to reject quest.'),
+            backgroundColor: Color(0xFFB3492F),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = Provider.of<AuthProvider>(context);
     final taskProvider = Provider.of<TaskProvider>(context);
     final taskIndex = taskProvider.tasks.indexWhere(
       (t) => t.id == widget.taskId,
@@ -390,35 +405,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           ),
                   ),
                   const SizedBox(height: 24),
-                  if (!isCompleted) ...[
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _capturePhoto,
-                            icon: const Icon(Icons.camera_alt),
-                            label: const Text('Camera'),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: OutlinedButton.icon(
-                            onPressed: _selectFromGallery,
-                            icon: const Icon(Icons.photo_library),
-                            label: const Text('Gallery'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton.icon(
-                      onPressed: _isProcessing
-                          ? null
-                          : () => _completeQuest(task),
-                      icon: const Icon(Icons.check_circle),
-                      label: const Text('Complete Quest'),
-                    ),
-                  ] else
+                  if (task.status == 'completed')
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
@@ -440,7 +427,113 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                           ),
                         ],
                       ),
-                    ),
+                    )
+                  else if (task.status == 'submitted')
+                    authProvider.role == 'mahasiswa'
+                        ? Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFC48A2D).withAlpha(30),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFFC48A2D)),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.hourglass_empty_rounded, color: Color(0xFFC48A2D)),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Quest Submitted! Waiting for approval.',
+                                  style: TextStyle(
+                                    color: Color(0xFFC48A2D),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton.icon(
+                                  onPressed: _isProcessing ? null : () => _dosenReject(task),
+                                  icon: const Icon(Icons.close, color: Color(0xFFB3492F)),
+                                  label: const Text(
+                                    'Reject',
+                                    style: TextStyle(color: Color(0xFFB3492F)),
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    side: const BorderSide(color: Color(0xFFB3492F)),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: ElevatedButton.icon(
+                                  onPressed: _isProcessing ? null : () => _dosenApprove(task),
+                                  icon: const Icon(Icons.check_circle_rounded),
+                                  label: const Text('Approve'),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF4E7A51),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          )
+                  else
+                    authProvider.role == 'mahasiswa'
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: _capturePhoto,
+                                      icon: const Icon(Icons.camera_alt),
+                                      label: const Text('Camera'),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: OutlinedButton.icon(
+                                      onPressed: _selectFromGallery,
+                                      icon: const Icon(Icons.photo_library),
+                                      label: const Text('Gallery'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton.icon(
+                                onPressed: _isProcessing ? null : () => _completeQuest(task),
+                                icon: const Icon(Icons.check_circle),
+                                label: const Text('Complete Quest'),
+                              ),
+                            ],
+                          )
+                        : Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF6B6862).withAlpha(30),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: const Color(0xFF6B6862)),
+                            ),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.info_outline_rounded, color: Color(0xFF6B6862)),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Quest is active (student working on it)',
+                                  style: TextStyle(
+                                    color: Color(0xFF6B6862),
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                 ],
               ),
             ),
