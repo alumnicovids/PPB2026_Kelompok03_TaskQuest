@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/repositories/task_repository.dart';
@@ -26,6 +27,8 @@ class TaskRepositoryImpl implements TaskRepository {
     // Try to sync to Supabase remote database
     try {
       await _syncSingleTaskToRemote(taskModel);
+    } on PostgrestException catch (_) {
+      rethrow;
     } catch (_) {
       // Offline-first: ignore connection errors, task is saved locally
     }
@@ -52,6 +55,8 @@ class TaskRepositoryImpl implements TaskRepository {
     // Try to sync to Supabase remote database
     try {
       await _syncSingleTaskToRemote(taskModel);
+    } on PostgrestException catch (_) {
+      rethrow;
     } catch (_) {
       // Offline-first: ignore connection errors, task remains unsynced
     }
@@ -65,6 +70,8 @@ class TaskRepositoryImpl implements TaskRepository {
     // Try to delete from Supabase remote database
     try {
       await _supabaseRemoteDatasource.deleteTask(taskId);
+    } on PostgrestException catch (_) {
+      rethrow;
     } catch (_) {
       // Offline-first: ignore connection errors
     }

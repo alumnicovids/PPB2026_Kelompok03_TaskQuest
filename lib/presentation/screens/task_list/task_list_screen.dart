@@ -50,212 +50,267 @@ class _TaskListScreenState extends State<TaskListScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setBottomState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                left: 24,
-                right: 24,
-                top: 24,
-                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(
-                    'New Quest',
-                    style: Theme.of(context).textTheme.displaySmall,
+        return Consumer<AuthProvider>(
+          builder: (ctx, authProvider, child) {
+            return StatefulBuilder(
+              builder: (context, setBottomState) {
+                return Padding(
+                  padding: EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    top: 24,
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 24,
                   ),
-                  const SizedBox(height: 16),
-                  if (authProvider.role != 'mahasiswa') ...[
-                    DropdownButtonFormField<String>(
-                      initialValue: selectedStudent,
-                      decoration: const InputDecoration(
-                        labelText: 'Assign Quest To',
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'New Quest',
+                        style: Theme.of(context).textTheme.displaySmall,
                       ),
-                      items: [
-                        const DropdownMenuItem(
-                          value: 'all',
-                          child: Text('👥 All Students'),
+                      const SizedBox(height: 16),
+                      if (authProvider.role != 'mahasiswa') ...[
+                        DropdownButtonFormField<String>(
+                          initialValue: selectedStudent,
+                          decoration: const InputDecoration(
+                            labelText: 'Assign Quest To',
+                          ),
+                          items: [
+                            const DropdownMenuItem(
+                              value: 'all',
+                              child: Text('👥 All Students'),
+                            ),
+                            ...authProvider.users.map((student) {
+                              return DropdownMenuItem(
+                                value: student.id,
+                                child: Text('🧍 ${student.username}'),
+                              );
+                            }),
+                          ],
+                          onChanged: (v) =>
+                              setBottomState(() => selectedStudent = v!),
                         ),
-                        ...authProvider.users.map((student) {
-                          return DropdownMenuItem(
-                            value: student.id,
-                            child: Text('🧍 ${student.username}'),
-                          );
-                        }),
+                        const SizedBox(height: 12),
+                        if (authProvider.isLoading) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 4.0),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 14,
+                                  height: 14,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Loading student list...',
+                                  style: TextStyle(color: Color(0xFF6B6862), fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ] else if (authProvider.users.isEmpty) ...[
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 4.0),
+                            child: Text(
+                              '⚠️ No students registered yet.',
+                              style: TextStyle(color: Color(0xFFB3492F), fontSize: 12),
+                            ),
+                          ),
+                        ],
                       ],
-                      onChanged: (v) =>
-                          setBottomState(() => selectedStudent = v!),
-                    ),
-                    const SizedBox(height: 12),
-                  ],
-                  TextField(
-                    controller: titleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Quest Title *',
-                    ),
-                    textCapitalization: TextCapitalization.sentences,
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: descController,
-                    decoration: const InputDecoration(
-                      labelText: 'Description (optional)',
-                    ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedCategory,
-                    decoration: const InputDecoration(labelText: 'Category'),
-                    items: const [
-                      DropdownMenuItem(
-                        value: 'kuliah',
-                        child: Text('📚 Kuliah'),
+                      TextField(
+                        controller: titleController,
+                        decoration: const InputDecoration(
+                          labelText: 'Quest Title *',
+                        ),
+                        textCapitalization: TextCapitalization.sentences,
                       ),
-                      DropdownMenuItem(
-                        value: 'organisasi',
-                        child: Text('🏛️ Organisasi'),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: descController,
+                        decoration: const InputDecoration(
+                          labelText: 'Description (optional)',
+                        ),
+                        maxLines: 2,
                       ),
-                      DropdownMenuItem(
-                        value: 'pribadi',
-                        child: Text('🧍 Pribadi'),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        initialValue: selectedCategory,
+                        decoration: const InputDecoration(labelText: 'Category'),
+                        items: const [
+                          DropdownMenuItem(
+                            value: 'kuliah',
+                            child: Text('📚 Kuliah'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'organisasi',
+                            child: Text('🏛️ Organisasi'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'pribadi',
+                            child: Text('🧍 Pribadi'),
+                          ),
+                        ],
+                        onChanged: (v) =>
+                            setBottomState(() => selectedCategory = v!),
                       ),
-                    ],
-                    onChanged: (v) =>
-                        setBottomState(() => selectedCategory = v!),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedPriority,
-                    decoration: const InputDecoration(labelText: 'Priority'),
-                    items: const [
-                      DropdownMenuItem(value: 'low', child: Text('🟢 Low')),
-                      DropdownMenuItem(
-                        value: 'medium',
-                        child: Text('🟡 Medium'),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<String>(
+                        initialValue: selectedPriority,
+                        decoration: const InputDecoration(labelText: 'Priority'),
+                        items: const [
+                          DropdownMenuItem(value: 'low', child: Text('🟢 Low')),
+                          DropdownMenuItem(
+                            value: 'medium',
+                            child: Text('🟡 Medium'),
+                          ),
+                          DropdownMenuItem(value: 'high', child: Text('🔴 High')),
+                        ],
+                        onChanged: (v) =>
+                            setBottomState(() => selectedPriority = v!),
                       ),
-                      DropdownMenuItem(value: 'high', child: Text('🔴 High')),
-                    ],
-                    onChanged: (v) =>
-                        setBottomState(() => selectedPriority = v!),
-                  ),
-                  const SizedBox(height: 12),
-                  OutlinedButton.icon(
-                    icon: const Icon(Icons.calendar_today),
-                    label: Text(
-                      'Deadline: ${selectedDeadline.day}/${selectedDeadline.month}/${selectedDeadline.year} ${selectedDeadline.hour.toString().padLeft(2, '0')}:${selectedDeadline.minute.toString().padLeft(2, '0')}',
-                    ),
-                    onPressed: () async {
-                      final date = await showDatePicker(
-                        context: context,
-                        initialDate: selectedDeadline,
-                        firstDate: DateTime.now(),
-                        lastDate: DateTime.now().add(const Duration(days: 365)),
-                      );
-                      if (date != null && context.mounted) {
-                        final time = await showTimePicker(
-                          context: context,
-                          initialTime: TimeOfDay.fromDateTime(selectedDeadline),
-                        );
-                        if (time != null) {
-                          setBottomState(() {
-                            selectedDeadline = DateTime(
-                              date.year,
-                              date.month,
-                              date.day,
-                              time.hour,
-                              time.minute,
-                            );
-                          });
-                        }
-                      }
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () async {
-                      final title = titleController.text.trim();
-                      if (title.isEmpty) return;
-                      final baseXp = selectedPriority == 'high'
-                          ? 35
-                          : selectedPriority == 'medium'
-                          ? 20
-                          : 10;
-
-                      final taskProvider = Provider.of<TaskProvider>(
-                        context,
-                        listen: false,
-                      );
-
-                      if (authProvider.role == 'mahasiswa') {
-                        final newTask = Task(
-                          id: const Uuid().v4(),
-                          userId: userId,
-                          title: title,
-                          description: descController.text.trim().isEmpty
-                              ? null
-                              : descController.text.trim(),
-                          category: selectedCategory,
-                          priority: selectedPriority,
-                          deadline: selectedDeadline,
-                          status: 'pending',
-                          xpReward: baseXp,
-                          createdAt: DateTime.now(),
-                          isSynced: false,
-                        );
-                        await taskProvider.addTask(newTask);
-                      } else {
-                        if (selectedStudent == 'all') {
-                          for (final student in authProvider.users) {
-                            final newTask = Task(
-                              id: const Uuid().v4(),
-                              userId: student.id,
-                              title: title,
-                              description: descController.text.trim().isEmpty
-                                  ? null
-                                  : descController.text.trim(),
-                              category: selectedCategory,
-                              priority: selectedPriority,
-                              deadline: selectedDeadline,
-                              status: 'pending',
-                              xpReward: baseXp,
-                              createdAt: DateTime.now(),
-                              isSynced: false,
-                            );
-                            await taskProvider.addTask(newTask);
-                          }
-                        } else {
-                          final newTask = Task(
-                            id: const Uuid().v4(),
-                            userId: selectedStudent,
-                            title: title,
-                            description: descController.text.trim().isEmpty
-                                ? null
-                                : descController.text.trim(),
-                            category: selectedCategory,
-                            priority: selectedPriority,
-                            deadline: selectedDeadline,
-                            status: 'pending',
-                            xpReward: baseXp,
-                            createdAt: DateTime.now(),
-                            isSynced: false,
+                      const SizedBox(height: 12),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.calendar_today),
+                        label: Text(
+                          'Deadline: ${selectedDeadline.day}/${selectedDeadline.month}/${selectedDeadline.year} ${selectedDeadline.hour.toString().padLeft(2, '0')}:${selectedDeadline.minute.toString().padLeft(2, '0')}',
+                        ),
+                        onPressed: () async {
+                          final date = await showDatePicker(
+                            context: context,
+                            initialDate: selectedDeadline,
+                            firstDate: DateTime.now(),
+                            lastDate: DateTime.now().add(const Duration(days: 365)),
                           );
-                          await taskProvider.addTask(newTask);
-                        }
-                        // Refresh task board list
-                        await taskProvider.loadAllTasks();
-                      }
-                      if (context.mounted) {
-                        Navigator.pop(ctx);
-                      }
-                    },
-                    child: const Text('Add Quest'),
+                          if (date != null && context.mounted) {
+                            final time = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.fromDateTime(selectedDeadline),
+                            );
+                            if (time != null) {
+                              setBottomState(() {
+                                selectedDeadline = DateTime(
+                                  date.year,
+                                  date.month,
+                                  date.day,
+                                  time.hour,
+                                  time.minute,
+                                );
+                              });
+                            }
+                          }
+                        },
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final title = titleController.text.trim();
+                          if (title.isEmpty) return;
+
+                          if (authProvider.role != 'mahasiswa' &&
+                              selectedStudent == 'all' &&
+                              authProvider.users.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Cannot assign quest: No students registered yet.'),
+                                backgroundColor: Color(0xFFB3492F),
+                              ),
+                            );
+                            return;
+                          }
+
+                          final baseXp = selectedPriority == 'high'
+                              ? 35
+                              : selectedPriority == 'medium'
+                              ? 20
+                              : 10;
+
+                          final taskProvider = Provider.of<TaskProvider>(
+                            context,
+                            listen: false,
+                          );
+
+                          try {
+                            if (authProvider.role == 'mahasiswa') {
+                              final newTask = Task(
+                                id: const Uuid().v4(),
+                                userId: userId,
+                                title: title,
+                                description: descController.text.trim().isEmpty
+                                    ? null
+                                    : descController.text.trim(),
+                                category: selectedCategory,
+                                priority: selectedPriority,
+                                deadline: selectedDeadline,
+                                status: 'pending',
+                                xpReward: baseXp,
+                                createdAt: DateTime.now(),
+                                isSynced: false,
+                              );
+                              await taskProvider.addTask(newTask);
+                            } else {
+                              if (selectedStudent == 'all') {
+                                for (final student in authProvider.users) {
+                                  final newTask = Task(
+                                    id: const Uuid().v4(),
+                                    userId: student.id,
+                                    title: title,
+                                    description: descController.text.trim().isEmpty
+                                        ? null
+                                        : descController.text.trim(),
+                                    category: selectedCategory,
+                                    priority: selectedPriority,
+                                    deadline: selectedDeadline,
+                                    status: 'pending',
+                                    xpReward: baseXp,
+                                    createdAt: DateTime.now(),
+                                    isSynced: false,
+                                  );
+                                  await taskProvider.addTask(newTask);
+                                }
+                              } else {
+                                final newTask = Task(
+                                  id: const Uuid().v4(),
+                                  userId: selectedStudent,
+                                  title: title,
+                                  description: descController.text.trim().isEmpty
+                                      ? null
+                                      : descController.text.trim(),
+                                  category: selectedCategory,
+                                  priority: selectedPriority,
+                                  deadline: selectedDeadline,
+                                  status: 'pending',
+                                  xpReward: baseXp,
+                                  createdAt: DateTime.now(),
+                                  isSynced: false,
+                                );
+                                await taskProvider.addTask(newTask);
+                              }
+                              // Refresh task board list
+                              await taskProvider.loadAllTasks();
+                            }
+                            if (context.mounted) {
+                              Navigator.pop(ctx);
+                            }
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to create task: $e'),
+                                  backgroundColor: const Color(0xFFB3492F),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        child: const Text('Add Quest'),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                );
+              },
             );
           },
         );
