@@ -59,20 +59,6 @@ class AuthRepositoryImpl implements AuthRepository {
 
       await _supabaseRemoteDatasource.insertUser(userData);
 
-      // Create initial Character for this user
-      final characterId = const Uuid().v4();
-      final characterData = {
-        'id': characterId,
-        'user_id': userId,
-        'class_type': 'knight',
-        'level': 1,
-        'current_xp': 0,
-        'xp_to_next_level': 100,
-        'appearance_stage': 1,
-        'updated_at': DateTime.now().toIso8601String(),
-      };
-      await _supabaseRemoteDatasource.upsertCharacter(characterData);
-
       // Save session
       await _sessionDatasource.saveSession(
         userId: userId,
@@ -157,5 +143,12 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> updateUserRole(String userId, String role) async {
     await _supabaseRemoteDatasource.updateUser(userId, {'role': role});
+  }
+
+  @override
+  Future<void> updateUsername(String userId, String newUsername) async {
+    await _supabaseRemoteDatasource.updateUser(userId, {'username': newUsername});
+    final role = _sessionDatasource.getRole() ?? 'mahasiswa';
+    await _sessionDatasource.saveSession(userId: userId, username: newUsername, role: role);
   }
 }

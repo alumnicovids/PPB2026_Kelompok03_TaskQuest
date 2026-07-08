@@ -154,7 +154,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
         ? Icons.auto_stories_rounded
         : classType == 'archer'
             ? Icons.gps_fixed_rounded
-            : Icons.shield_rounded;
+            : classType == 'assassin'
+                ? Icons.bolt_rounded
+                : Icons.shield_rounded;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),

@@ -236,6 +236,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final taskProvider = Provider.of<TaskProvider>(context);
 
     final character = characterProvider.character;
+
+    if (role == 'mahasiswa' && character == null && !characterProvider.isLoading) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        context.go('/setup-profile');
+      });
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
     final username = authProvider.username ?? 'Hero';
     final tasks = taskProvider.tasks;
 
@@ -301,10 +312,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Icon(
                                 character.classType.toLowerCase() == 'mage'
                                     ? Icons.auto_stories_rounded
-                                    : character.classType.toLowerCase() ==
-                                          'archer'
-                                    ? Icons.gps_fixed_rounded
-                                    : Icons.shield_rounded,
+                                    : character.classType.toLowerCase() == 'archer'
+                                        ? Icons.gps_fixed_rounded
+                                        : character.classType.toLowerCase() == 'assassin'
+                                            ? Icons.bolt_rounded
+                                            : Icons.shield_rounded,
                                 size: 40,
                                 color: const Color(0xFFC15F3C),
                               ),

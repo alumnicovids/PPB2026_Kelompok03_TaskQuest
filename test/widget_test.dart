@@ -65,6 +65,8 @@ class FakeAuthRepository implements AuthRepository {
   Future<List<UserEntity>> getUsersByRole(String role) async => [];
   @override
   Future<void> updateUserRole(String userId, String role) async {}
+  @override
+  Future<void> updateUsername(String userId, String newUsername) async {}
 }
 
 class FakeCharacterRepository implements CharacterRepository {

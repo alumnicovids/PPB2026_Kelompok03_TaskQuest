@@ -49,27 +49,33 @@ class CharacterProvider with ChangeNotifier {
     notifyListeners();
     try {
       final char = await _characterRepository.getCharacter(userId);
-      if (char != null) {
-        _character = char;
-      } else {
-        // Initialize new character for user
-        final newChar = Character(
-          id: 'char-$userId',
-          userId: userId,
-          classType: 'knight',
-          level: 1,
-          currentXp: 0,
-          xpToNextLevel: 100,
-          appearanceStage: 1,
-          updatedAt: DateTime.now(),
-        );
-        await _characterRepository.saveCharacter(newChar);
-        _character = newChar;
-      }
+      _character = char;
     } catch (_) {
       if (_character == null) {
         loadMockCharacter(userId);
       }
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> createInitialCharacter(String userId, String classType) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      final newChar = Character(
+        id: 'char-$userId',
+        userId: userId,
+        classType: classType,
+        level: 1,
+        currentXp: 0,
+        xpToNextLevel: 100,
+        appearanceStage: 1,
+        updatedAt: DateTime.now(),
+      );
+      await _characterRepository.saveCharacter(newChar);
+      _character = newChar;
     } finally {
       _isLoading = false;
       notifyListeners();

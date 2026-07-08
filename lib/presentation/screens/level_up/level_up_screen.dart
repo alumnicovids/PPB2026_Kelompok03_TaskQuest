@@ -138,6 +138,9 @@ class _LevelUpScreenState extends State<LevelUpScreen>
       case 'archer':
         classIcon = Icons.gps_fixed_rounded;
         break;
+      case 'assassin':
+        classIcon = Icons.bolt_rounded;
+        break;
       default:
         classIcon = Icons.shield_rounded;
     }

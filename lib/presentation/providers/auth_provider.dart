@@ -119,6 +119,20 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  Future<void> changeUsername(String newUsername) async {
+    final uid = _userId;
+    if (uid == null) return;
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _authRepository.updateUsername(uid, newUsername);
+      _username = newUsername;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> registerLecturer(
     String username,
     String email,
