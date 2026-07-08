@@ -48,17 +48,17 @@ class _TaskListScreenState extends State<TaskListScreen> {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (ctx) {
+      builder: (sheetContext) {
         return Consumer<AuthProvider>(
-          builder: (ctx, authProvider, child) {
+          builder: (consumerContext, authProvider, child) {
             return StatefulBuilder(
-              builder: (context, setBottomState) {
+              builder: (dialogContext, setBottomState) {
                 return Padding(
                   padding: EdgeInsets.only(
                     left: 24,
                     right: 24,
                     top: 24,
-                    bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                    bottom: MediaQuery.of(dialogContext).viewInsets.bottom + 24,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
@@ -66,7 +66,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                     children: [
                       Text(
                         'New Quest',
-                        style: Theme.of(context).textTheme.displaySmall,
+                        style: Theme.of(dialogContext).textTheme.displaySmall,
                       ),
                       const SizedBox(height: 16),
                       if (authProvider.role != 'mahasiswa') ...[
@@ -193,16 +193,16 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         ),
                         onPressed: () async {
                           final date = await showDatePicker(
-                            context: context,
+                            context: dialogContext,
                             initialDate: selectedDeadline,
                             firstDate: DateTime.now(),
                             lastDate: DateTime.now().add(
                               const Duration(days: 365),
                             ),
                           );
-                          if (date != null && context.mounted) {
+                          if (date != null && dialogContext.mounted) {
                             final time = await showTimePicker(
-                              context: context,
+                              context: dialogContext,
                               initialTime: TimeOfDay.fromDateTime(
                                 selectedDeadline,
                               ),
@@ -230,7 +230,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                           if (authProvider.role != 'mahasiswa' &&
                               selectedStudent == 'all' &&
                               authProvider.users.isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
+                            ScaffoldMessenger.of(dialogContext).showSnackBar(
                               const SnackBar(
                                 content: Text(
                                   'Cannot assign quest: No students registered yet.',
@@ -248,7 +248,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                               : 10;
 
                           final taskProvider = Provider.of<TaskProvider>(
-                            context,
+                            dialogContext,
                             listen: false,
                           );
 
@@ -313,12 +313,12 @@ class _TaskListScreenState extends State<TaskListScreen> {
                               // Refresh task board list
                               await taskProvider.loadAllTasks();
                             }
-                            if (context.mounted) {
-                              Navigator.pop(ctx);
+                            if (dialogContext.mounted) {
+                              Navigator.pop(dialogContext);
                             }
                           } catch (e) {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
+                            if (dialogContext.mounted) {
+                              ScaffoldMessenger.of(dialogContext).showSnackBar(
                                 SnackBar(
                                   content: Text('Failed to create task: $e'),
                                   backgroundColor: const Color(0xFFB3492F),
