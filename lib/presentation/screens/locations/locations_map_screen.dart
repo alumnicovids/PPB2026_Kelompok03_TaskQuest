@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:uuid/uuid.dart';
+import 'package:geolocator/geolocator.dart';
 import '../../../domain/entities/study_location.dart';
 import '../../../domain/repositories/location_repository.dart';
 import '../../providers/auth_provider.dart';
@@ -19,11 +20,85 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
   List<StudyLocation> _locations = [];
   bool _isLoading = false;
   LatLng _initialCenter = const LatLng(-7.2504, 112.7688); // Default to Surabaya/Campus area
+  LatLng? _currentUserLocation;
 
   @override
   void initState() {
     super.initState();
     _loadLocations();
+    _goToMyLocation();
+  }
+
+  Future<Position?> _determinePosition() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location services are disabled.')),
+        );
+      }
+      return null;
+    }
+
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Location permissions are denied.')),
+          );
+        }
+        return null;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Location permissions are permanently denied, we cannot request permissions.',
+            ),
+          ),
+        );
+      }
+      return null;
+    }
+
+    return await Geolocator.getCurrentPosition();
+  }
+
+  Future<void> _goToMyLocation() async {
+    setState(() {
+      _isLoading = true;
+    });
+    try {
+      final position = await _determinePosition();
+      if (position != null) {
+        final userLatLng = LatLng(position.latitude, position.longitude);
+        setState(() {
+          _currentUserLocation = userLatLng;
+          _initialCenter = userLatLng;
+        });
+        _mapController.move(userLatLng, 15.0);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Could not get current location: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   Future<void> _loadLocations() async {
@@ -215,10 +290,7 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.my_location),
-            onPressed: () {
-              // Recenter to default center
-              _mapController.move(_initialCenter, 14.0);
-            },
+            onPressed: _goToMyLocation,
             tooltip: 'My Location',
           ),
         ],
@@ -240,7 +312,31 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
                       userAgentPackageName: 'com.example.taskquest',
                     ),
                     MarkerLayer(
-                      markers: _locations.map((loc) {
+                      markers: [
+                        if (_currentUserLocation != null)
+                          Marker(
+                            point: _currentUserLocation!,
+                            width: 40,
+                            height: 40,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Colors.blue.withAlpha((0.3 * 255).round()),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Container(
+                                  width: 16,
+                                  height: 16,
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ..._locations.map((loc) {
                         return Marker(
                           point: LatLng(loc.latitude, loc.longitude),
                           width: 80,
@@ -303,10 +399,11 @@ class _LocationsMapScreenState extends State<LocationsMapScreen> {
                             ),
                           ),
                         );
-                      }).toList(),
-                    ),
-                  ],
-                ),
+                      }),
+                    ],
+                  ),
+                ],
+              ),
                 Positioned(
                   top: 16,
                   left: 16,
