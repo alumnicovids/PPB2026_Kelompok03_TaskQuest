@@ -67,6 +67,22 @@ class TaskProvider with ChangeNotifier {
     }
   }
 
+  Future<void> addTasks(List<Task> newTasks) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      for (final task in newTasks) {
+        await _taskRepository.createTask(task);
+      }
+      _tasks.insertAll(0, newTasks);
+    } catch (_) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> updateTask(Task task) async {
     _isLoading = true;
     notifyListeners();
