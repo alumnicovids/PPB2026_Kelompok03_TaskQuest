@@ -16,6 +16,7 @@ class CharacterProvider with ChangeNotifier {
   final XpLogRepository _xpLogRepository;
 
   Character? _character;
+  List<Character> _allCharacters = [];
   bool _isLoading = false;
 
   CharacterProvider(
@@ -26,6 +27,7 @@ class CharacterProvider with ChangeNotifier {
   );
 
   Character? get character => _character;
+  List<Character> get allCharacters => _allCharacters;
   bool get isLoading => _isLoading;
 
   void loadMockCharacter(String userId) {
@@ -128,5 +130,18 @@ class CharacterProvider with ChangeNotifier {
     notifyListeners();
 
     return {'xpGained': xpGained, 'leveledUp': levelUpResult.leveledUp};
+  }
+
+  Future<void> loadAllCharacters() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _allCharacters = await _characterRepository.getAllCharacters();
+    } catch (_) {
+      // Handle error
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }

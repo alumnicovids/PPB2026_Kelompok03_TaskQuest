@@ -68,4 +68,10 @@ class CharacterRepositoryImpl implements CharacterRepository {
       // Offline-first: save locally, sync later or ignore remote fail
     }
   }
+
+  @override
+  Future<List<Character>> getAllCharacters() async {
+    final rawList = await _supabaseRemoteDatasource.getAllCharacters();
+    return rawList.map((map) => CharacterModel.fromMap(map)).toList();
+  }
 }

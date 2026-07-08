@@ -12,6 +12,7 @@ import 'package:taskquest/presentation/providers/character_provider.dart';
 import 'package:taskquest/domain/usecases/calculate_xp_use_case.dart';
 import 'package:taskquest/domain/usecases/level_up_use_case.dart';
 import 'package:taskquest/domain/entities/task.dart';
+import 'package:taskquest/domain/entities/user_entity.dart';
 import 'package:taskquest/domain/entities/character.dart';
 import 'package:taskquest/domain/entities/study_location.dart';
 import 'package:taskquest/domain/entities/xp_log.dart';
@@ -56,6 +57,12 @@ class FakeAuthRepository implements AuthRepository {
   String? getUsername() => null;
   @override
   String? getRole() => null;
+  @override
+  Future<List<UserEntity>> getAllUsers() async => [];
+  @override
+  Future<List<UserEntity>> getUsersByRole(String role) async => [];
+  @override
+  Future<void> updateUserRole(String userId, String role) async {}
 }
 
 class FakeCharacterRepository implements CharacterRepository {
@@ -63,6 +70,8 @@ class FakeCharacterRepository implements CharacterRepository {
   Future<Character?> getCharacter(String userId) async => null;
   @override
   Future<void> saveCharacter(Character character) async {}
+  @override
+  Future<List<Character>> getAllCharacters() async => [];
 }
 
 class FakeLocationRepository implements LocationRepository {
