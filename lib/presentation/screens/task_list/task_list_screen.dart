@@ -284,26 +284,28 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                           .where((s) => s.id == selectedStudent)
                                           .toList();
 
-                                final List<Task> newTasks = [];
-                                for (final student in targets) {
-                                  newTasks.add(
-                                    Task(
-                                      id: const Uuid().v4(),
-                                      userId: student.id,
-                                      title: title,
-                                      description: desc,
-                                      category: selectedCategory,
-                                      priority: selectedPriority,
-                                      deadline: selectedDeadline,
-                                      status: 'pending',
-                                      xpReward: baseXp,
-                                      createdAt: DateTime.now(),
-                                      isSynced: false,
-                                    ),
-                                  );
-                                }
+                                final assignments = targets.map((s) => TaskAssignment(
+                                  studentId: s.id,
+                                  studentUsername: s.username,
+                                  status: 'pending',
+                                )).toList();
 
-                                await taskProv.addTasks(newTasks);
+                                final newTask = Task(
+                                  id: const Uuid().v4(),
+                                  userId: userId,
+                                  title: title,
+                                  description: desc,
+                                  category: selectedCategory,
+                                  priority: selectedPriority,
+                                  deadline: selectedDeadline,
+                                  status: 'pending',
+                                  xpReward: baseXp,
+                                  createdAt: DateTime.now(),
+                                  isSynced: false,
+                                  assignments: assignments,
+                                );
+
+                                await taskProv.addTask(newTask);
                                 await taskProv.loadAllTasks();
                               }
                               if (sheetContext.mounted) {

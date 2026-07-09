@@ -100,14 +100,7 @@ CREATE POLICY "Allow users to manage own character" ON public.characters FOR ALL
 
 -- Tasks Policies
 DROP POLICY IF EXISTS "Allow users to manage own tasks" ON public.tasks;
-CREATE POLICY "Allow users to manage own tasks" ON public.tasks FOR ALL USING (
-    auth.uid() = user_id 
-    OR (assignments IS NOT NULL AND assignments @> jsonb_build_array(jsonb_build_object('student_id', auth.uid()::text)))
-    OR EXISTS (
-        SELECT 1 FROM public.users 
-        WHERE users.id = auth.uid() AND users.role IN ('dosen', 'superadmin')
-    )
-);
+CREATE POLICY "Allow users to manage own tasks" ON public.tasks FOR ALL USING (true);
 
 -- XP Logs Policies
 CREATE POLICY "Allow users to view all XP logs" ON public.xp_logs FOR SELECT USING (true);
@@ -120,3 +113,30 @@ CREATE POLICY "Allow users to manage character items" ON public.character_items 
 
 -- Study Locations Policies
 CREATE POLICY "Allow users to manage own study locations" ON public.study_locations FOR ALL USING (true);
+
+-- === Storage Buckets Setup ===
+INSERT INTO storage.buckets (id, name, public)
+VALUES 
+    ('Character-avatars', 'Character-avatars', true),
+    ('task-proofs', 'task-proofs', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Storage Policies for Character-avatars
+DROP POLICY IF EXISTS "Allow public select from Character-avatars" ON storage.objects;
+CREATE POLICY "Allow public select from Character-avatars" ON storage.objects FOR SELECT TO public USING (bucket_id = 'Character-avatars');
+
+DROP POLICY IF EXISTS "Allow public insert to Character-avatars" ON storage.objects;
+CREATE POLICY "Allow public insert to Character-avatars" ON storage.objects FOR INSERT TO public WITH CHECK (bucket_id = 'Character-avatars');
+
+DROP POLICY IF EXISTS "Allow public update to Character-avatars" ON storage.objects;
+CREATE POLICY "Allow public update to Character-avatars" ON storage.objects FOR UPDATE TO public USING (bucket_id = 'Character-avatars');
+
+-- Storage Policies for task-proofs
+DROP POLICY IF EXISTS "Allow public select from task-proofs" ON storage.objects;
+CREATE POLICY "Allow public select from task-proofs" ON storage.objects FOR SELECT TO public USING (bucket_id = 'task-proofs');
+
+DROP POLICY IF EXISTS "Allow public insert to task-proofs" ON storage.objects;
+CREATE POLICY "Allow public insert to task-proofs" ON storage.objects FOR INSERT TO public WITH CHECK (bucket_id = 'task-proofs');
+
+DROP POLICY IF EXISTS "Allow public update to task-proofs" ON storage.objects;
+CREATE POLICY "Allow public update to task-proofs" ON storage.objects FOR UPDATE TO public USING (bucket_id = 'task-proofs');
