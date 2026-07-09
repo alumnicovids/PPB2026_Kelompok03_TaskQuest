@@ -72,7 +72,7 @@ class SupabaseRemoteDatasource {
           } catch (_) {}
         }
         if (list != null) {
-          return list.any((a) => a is Map && a['student_id'] == userId);
+          return list.any((a) => a is Map && a['student_id']?.toString().toLowerCase() == userId.toLowerCase());
         }
       }
       return false;

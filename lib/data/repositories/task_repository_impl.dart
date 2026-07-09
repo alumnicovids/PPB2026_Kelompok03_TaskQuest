@@ -39,7 +39,7 @@ class TaskRepositoryImpl implements TaskRepository {
     return models.map<Task>((task) {
       if (task.assignments != null) {
         final myAssignment = task.assignments!.firstWhere(
-          (a) => a.studentId == userId,
+          (a) => a.studentId.toLowerCase() == userId.toLowerCase(),
           orElse: () => TaskAssignment(
             studentId: userId,
             studentUsername: task.studentUsername ?? '',
@@ -72,7 +72,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
     if (existingTask != null && existingTask.assignments != null) {
       final List<TaskAssignment> updatedAssignments = List.from(existingTask.assignments!);
-      final myAssignmentIndex = updatedAssignments.indexWhere((a) => a.studentId == task.userId);
+      final myAssignmentIndex = updatedAssignments.indexWhere((a) => a.studentId.toLowerCase() == task.userId.toLowerCase());
       if (myAssignmentIndex != -1) {
         updatedAssignments[myAssignmentIndex] = updatedAssignments[myAssignmentIndex].copyWith(
           status: task.status,
@@ -202,7 +202,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
     if (task.assignments != null) {
       final List<TaskAssignment> updatedAssignments = List.from(task.assignments!);
-      final myAssignmentIndex = updatedAssignments.indexWhere((a) => a.studentId == studentUserId);
+      final myAssignmentIndex = updatedAssignments.indexWhere((a) => a.studentId.toLowerCase() == studentUserId.toLowerCase());
       if (myAssignmentIndex != -1) {
         updatedAssignments[myAssignmentIndex] = updatedAssignments[myAssignmentIndex].copyWith(
           status: 'completed',
@@ -269,7 +269,7 @@ class TaskRepositoryImpl implements TaskRepository {
 
     if (task.assignments != null) {
       final List<TaskAssignment> updatedAssignments = List.from(task.assignments!);
-      final myAssignmentIndex = updatedAssignments.indexWhere((a) => a.studentId == studentUserId);
+      final myAssignmentIndex = updatedAssignments.indexWhere((a) => a.studentId.toLowerCase() == studentUserId.toLowerCase());
       if (myAssignmentIndex != -1) {
         updatedAssignments[myAssignmentIndex] = updatedAssignments[myAssignmentIndex].copyWith(
           status: 'pending',
