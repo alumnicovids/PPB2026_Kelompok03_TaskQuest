@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class SqliteHelper {
   static const String _databaseName = 'taskquest.db';
-  static const int _databaseVersion = 4;
+  static const int _databaseVersion = 5;
 
   // Table Names
   static const String tableTasks = 'tasks';
@@ -95,9 +95,18 @@ class SqliteHelper {
       );
     }
     if (oldVersion < 4) {
-      await db.execute(
-        'ALTER TABLE $tableTasks ADD COLUMN assignments TEXT',
-      );
+      try {
+        await db.execute(
+          'ALTER TABLE $tableTasks ADD COLUMN assignments TEXT',
+        );
+      } catch (_) {}
+    }
+    if (oldVersion < 5) {
+      try {
+        await db.execute(
+          'ALTER TABLE $tableTasks ADD COLUMN assignments TEXT',
+        );
+      } catch (_) {}
     }
   }
 
