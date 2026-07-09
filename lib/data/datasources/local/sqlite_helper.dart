@@ -110,6 +110,13 @@ class SqliteHelper {
     }
   }
 
+  Future<void> clearAllData() async {
+    final db = await database;
+    await db.delete(tableTasks);
+    await db.delete(tableStudyLocations);
+    await db.delete(tableXpLogs);
+  }
+
   Future<void> close() async {
     final db = _database;
     if (db != null) {

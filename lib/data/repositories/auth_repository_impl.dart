@@ -2,6 +2,7 @@ import 'package:uuid/uuid.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/local/session_datasource.dart';
+import '../datasources/local/sqlite_helper.dart';
 import '../datasources/remote/supabase_remote_datasource.dart';
 import '../models/user_model.dart';
 
@@ -106,6 +107,9 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<void> logout() async {
     await _sessionDatasource.clearSession();
+    try {
+      await SqliteHelper().clearAllData();
+    } catch (_) {}
   }
 
   @override
