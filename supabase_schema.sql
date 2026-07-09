@@ -5,7 +5,6 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. Table: users
--- Note: If you use Supabase Auth, you can link this table's ID to auth.users.id.
 CREATE TABLE IF NOT EXISTS public.users (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     username VARCHAR(255) UNIQUE NOT NULL,
@@ -22,11 +21,11 @@ ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 CREATE TABLE IF NOT EXISTS public.characters (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL UNIQUE REFERENCES public.users(id) ON DELETE CASCADE,
-    class_type VARCHAR(50) NOT NULL, -- 'knight', 'mage', 'archer'
+    class_type VARCHAR(50) NOT NULL,
     level INTEGER NOT NULL DEFAULT 1,
     current_xp INTEGER NOT NULL DEFAULT 0,
-    xp_to_next_level INTEGER NOT NULL, -- calculated: 100 * level^1.3
-    appearance_stage INTEGER NOT NULL DEFAULT 1, -- visual stage (1-5), rises every 5 levels
+    xp_to_next_level INTEGER NOT NULL,
+    appearance_stage INTEGER NOT NULL DEFAULT 1,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
@@ -38,14 +37,15 @@ CREATE TABLE IF NOT EXISTS public.tasks (
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     description TEXT,
-    category VARCHAR(50) NOT NULL, -- 'kuliah', 'organisasi', 'pribadi'
-    priority VARCHAR(50) NOT NULL, -- 'low', 'medium', 'high'
+    category VARCHAR(50) NOT NULL,
+    priority VARCHAR(50) NOT NULL,
     deadline TIMESTAMP WITH TIME ZONE NOT NULL,
-    status VARCHAR(50) NOT NULL DEFAULT 'pending', -- 'pending', 'in_progress', 'completed'
+    status VARCHAR(50) NOT NULL DEFAULT 'pending',
     xp_reward INTEGER NOT NULL,
     proof_photo_path TEXT,
     completed_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    assignments JSONB DEFAULT NULL
 );
 
 ALTER TABLE public.tasks ENABLE ROW LEVEL SECURITY;
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS public.xp_logs (
     user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     task_id UUID REFERENCES public.tasks(id) ON DELETE SET NULL,
     xp_amount INTEGER NOT NULL,
-    reason VARCHAR(100) NOT NULL, -- 'task_completed', 'streak_bonus', etc.
+    reason VARCHAR(100) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
@@ -66,15 +66,27 @@ ALTER TABLE public.xp_logs ENABLE ROW LEVEL SECURITY;
 CREATE TABLE IF NOT EXISTS public.character_items (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     character_id UUID NOT NULL REFERENCES public.characters(id) ON DELETE CASCADE,
-    item_name VARCHAR(100) NOT NULL, -- 'Pedang Perunggu', 'Badge Rajin', etc.
-    item_type VARCHAR(50) NOT NULL, -- 'weapon', 'badge', 'outfit'
+    item_name VARCHAR(100) NOT NULL,
+    item_type VARCHAR(50) NOT NULL,
     unlock_condition VARCHAR(255) NOT NULL,
     unlocked_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL
 );
 
 ALTER TABLE public.character_items ENABLE ROW LEVEL SECURITY;
 
--- Basic Row Level Security (RLS) Policies (Allow users to read/write their own data)
+-- 6. Table: study_locations
+CREATE TABLE IF NOT EXISTS public.study_locations (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    name VARCHAR(255) NOT NULL,
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL,
+    is_favorite BOOLEAN NOT NULL DEFAULT false
+);
+
+ALTER TABLE public.study_locations ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
 
 -- Users Policies
 CREATE POLICY "Allow public read access to users" ON public.users FOR SELECT USING (true);
@@ -88,7 +100,14 @@ CREATE POLICY "Allow users to manage own character" ON public.characters FOR ALL
 
 -- Tasks Policies
 DROP POLICY IF EXISTS "Allow users to manage own tasks" ON public.tasks;
-CREATE POLICY "Allow users to manage own tasks" ON public.tasks FOR ALL USING (true);
+CREATE POLICY "Allow users to manage own tasks" ON public.tasks FOR ALL USING (
+    auth.uid() = user_id 
+    OR (assignments IS NOT NULL AND assignments @> jsonb_build_array(jsonb_build_object('student_id', auth.uid()::text)))
+    OR EXISTS (
+        SELECT 1 FROM public.users 
+        WHERE users.id = auth.uid() AND users.role IN ('dosen', 'superadmin')
+    )
+);
 
 -- XP Logs Policies
 CREATE POLICY "Allow users to view all XP logs" ON public.xp_logs FOR SELECT USING (true);
@@ -98,18 +117,6 @@ CREATE POLICY "Allow users to insert own XP logs" ON public.xp_logs FOR ALL USIN
 -- Character Items Policies
 CREATE POLICY "Allow users to view character items" ON public.character_items FOR SELECT USING (true);
 CREATE POLICY "Allow users to manage character items" ON public.character_items FOR ALL USING (true);
-
--- 6. Table: study_locations
-CREATE TABLE IF NOT EXISTS public.study_locations (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL,
-    latitude REAL NOT NULL,
-    longitude REAL NOT NULL,
-    is_favorite BOOLEAN NOT NULL DEFAULT false
-);
-
-ALTER TABLE public.study_locations ENABLE ROW LEVEL SECURITY;
 
 -- Study Locations Policies
 CREATE POLICY "Allow users to manage own study locations" ON public.study_locations FOR ALL USING (true);
