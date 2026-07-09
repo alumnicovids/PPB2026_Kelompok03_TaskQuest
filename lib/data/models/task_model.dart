@@ -1,3 +1,4 @@
+import 'dart:convert';
 import '../../domain/entities/task.dart';
 
 class TaskModel extends Task {
@@ -16,6 +17,7 @@ class TaskModel extends Task {
     required super.createdAt,
     required super.isSynced,
     super.studentUsername,
+    super.assignments,
   });
 
   factory TaskModel.fromMap(Map<String, dynamic> map) {
@@ -23,6 +25,23 @@ class TaskModel extends Task {
     final studentUsername = usersMap != null
         ? usersMap['username'] as String?
         : map['student_username'] as String?;
+
+    List<TaskAssignment>? assignmentsList;
+    if (map['assignments'] != null) {
+      final dynamic rawAssignments = map['assignments'];
+      if (rawAssignments is String) {
+        try {
+          final List<dynamic> decoded = jsonDecode(rawAssignments) as List<dynamic>;
+          assignmentsList = decoded
+              .map((e) => TaskAssignment.fromMap(Map<String, dynamic>.from(e as Map)))
+              .toList();
+        } catch (_) {}
+      } else if (rawAssignments is List) {
+        assignmentsList = rawAssignments
+            .map((e) => TaskAssignment.fromMap(Map<String, dynamic>.from(e as Map)))
+            .toList();
+      }
+    }
 
     return TaskModel(
       id: map['id'] as String,
@@ -43,6 +62,7 @@ class TaskModel extends Task {
           ? (map['is_synced'] as int) == 1
           : false,
       studentUsername: studentUsername,
+      assignments: assignmentsList,
     );
   }
 
@@ -61,14 +81,18 @@ class TaskModel extends Task {
       'completed_at': completedAt?.toIso8601String(),
       'created_at': createdAt.toIso8601String(),
       'is_synced': isSynced ? 1 : 0,
-      if (studentUsername != null) 'student_username': studentUsername,
+      if (assignments != null)
+        'assignments': jsonEncode(assignments!.map((e) => e.toMap()).toList()),
     };
   }
 
   Map<String, dynamic> toSupabaseMap() {
-    return toMap()
-      ..remove('is_synced')
-      ..remove('student_username');
+    final map = toMap();
+    map.remove('is_synced');
+    if (assignments != null) {
+      map['assignments'] = assignments!.map((e) => e.toMap()).toList();
+    }
+    return map;
   }
 
   factory TaskModel.fromEntity(Task task) {
@@ -87,6 +111,7 @@ class TaskModel extends Task {
       createdAt: task.createdAt,
       isSynced: task.isSynced,
       studentUsername: task.studentUsername,
+      assignments: task.assignments,
     );
   }
 }
