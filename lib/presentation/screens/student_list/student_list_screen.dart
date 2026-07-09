@@ -323,7 +323,7 @@ class _StudentListScreenState extends State<StudentListScreen> {
                 backgroundColor: const Color(0xFFEDE9DE),
                 child: ClipOval(
                   child: Image.network(
-                    '${AppConstants.supabaseUrl}/storage/v1/object/public/character-avatars/${classType}_stage${character.appearanceStage}.png',
+                    '${AppConstants.supabaseUrl}/storage/v1/object/public/Character-avatars/${classType}_stage${character.appearanceStage}.png',
                     fit: BoxFit.cover,
                     width: 56,
                     height: 56,

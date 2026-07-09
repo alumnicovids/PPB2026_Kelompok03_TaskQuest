@@ -198,7 +198,7 @@ class _LevelUpScreenState extends State<LevelUpScreen>
                           ),
                           child: ClipOval(
                             child: Image.network(
-                              '${AppConstants.supabaseUrl}/storage/v1/object/public/character-avatars/${className.toLowerCase()}_stage$appearanceStage.png',
+                              '${AppConstants.supabaseUrl}/storage/v1/object/public/Character-avatars/${className.toLowerCase()}_stage$appearanceStage.png',
                               fit: BoxFit.cover,
                               width: 100,
                               height: 100,

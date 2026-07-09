@@ -53,7 +53,7 @@ class SupabaseRemoteDatasource {
     final response = await _supabaseClient
         .from('tasks')
         .select()
-        .eq('user_id', userId)
+        .or('user_id.eq.$userId,assignments.cs.[{"student_id":"$userId"}]')
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(response);
   }
@@ -139,10 +139,10 @@ class SupabaseRemoteDatasource {
   ) async {
     final file = File(localPath);
     await _supabaseClient.storage
-        .from('character-avatars')
+        .from('Character-avatars')
         .upload(fileName, file, fileOptions: const FileOptions(upsert: true));
     return _supabaseClient.storage
-        .from('character-avatars')
+        .from('Character-avatars')
         .getPublicUrl(fileName);
   }
 

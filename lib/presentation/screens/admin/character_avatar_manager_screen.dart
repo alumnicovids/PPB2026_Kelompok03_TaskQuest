@@ -88,7 +88,7 @@ class _CharacterAvatarManagerScreenState
       setState(() {
         _isSuccess = false;
         _message =
-            'Upload failed. Please check if bucket "character-avatars" is created and public in Supabase Storage.';
+            'Upload failed. Please check if bucket "Character-avatars" is created and public in Supabase Storage.';
       });
     } finally {
       setState(() {
@@ -100,7 +100,7 @@ class _CharacterAvatarManagerScreenState
   @override
   Widget build(BuildContext context) {
     final publicUrl =
-        '${AppConstants.supabaseUrl}/storage/v1/object/public/character-avatars/${_selectedClass}_stage$_selectedStage.png?key=$_imageRefreshKey';
+        '${AppConstants.supabaseUrl}/storage/v1/object/public/Character-avatars/${_selectedClass}_stage$_selectedStage.png?key=$_imageRefreshKey';
 
     return Scaffold(
       appBar: AppBar(

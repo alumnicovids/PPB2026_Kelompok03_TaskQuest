@@ -342,7 +342,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               backgroundColor: const Color(0xFFE0A98C),
                               child: ClipOval(
                                 child: Image.network(
-                                  '${AppConstants.supabaseUrl}/storage/v1/object/public/character-avatars/${character.classType.toLowerCase()}_stage${character.appearanceStage}.png',
+                                  '${AppConstants.supabaseUrl}/storage/v1/object/public/Character-avatars/${character.classType.toLowerCase()}_stage${character.appearanceStage}.png',
                                   fit: BoxFit.cover,
                                   width: 80,
                                   height: 80,
