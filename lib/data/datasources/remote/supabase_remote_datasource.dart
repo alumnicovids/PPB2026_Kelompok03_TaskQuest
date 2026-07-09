@@ -56,9 +56,11 @@ class SupabaseRemoteDatasource {
         .from('tasks')
         .select('*, users(username)')
         .order('created_at', ascending: false);
-    final List<Map<String, dynamic>> allTasks = List<Map<String, dynamic>>.from(response);
+    final List<Map<String, dynamic>> allTasks = List<Map<String, dynamic>>.from(
+      response,
+    );
     print('RemoteDatasource.getTasks total remote tasks: ${allTasks.length}');
-    
+
     final filtered = allTasks.where((task) {
       if (task['user_id'] == userId) return true;
       final assignmentsData = task['assignments'];
@@ -72,7 +74,12 @@ class SupabaseRemoteDatasource {
           } catch (_) {}
         }
         if (list != null) {
-          return list.any((a) => a is Map && a['student_id']?.toString().toLowerCase() == userId.toLowerCase());
+          return list.any(
+            (a) =>
+                a is Map &&
+                a['student_id']?.toString().toLowerCase() ==
+                    userId.toLowerCase(),
+          );
         }
       }
       return false;

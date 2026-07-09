@@ -13,11 +13,7 @@ class TaskDetailScreen extends StatefulWidget {
   final String taskId;
   final String? studentUserId;
 
-  const TaskDetailScreen({
-    super.key,
-    required this.taskId,
-    this.studentUserId,
-  });
+  const TaskDetailScreen({super.key, required this.taskId, this.studentUserId});
 
   @override
   State<TaskDetailScreen> createState() => _TaskDetailScreenState();
@@ -251,7 +247,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     final authProvider = Provider.of<AuthProvider>(context);
     final taskProvider = Provider.of<TaskProvider>(context);
     final taskIndex = taskProvider.tasks.indexWhere(
-      (t) => t.id == widget.taskId && (widget.studentUserId == null || t.userId == widget.studentUserId),
+      (t) =>
+          t.id == widget.taskId &&
+          (widget.studentUserId == null || t.userId == widget.studentUserId),
     );
 
     if (taskIndex == -1) {

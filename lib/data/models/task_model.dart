@@ -31,14 +31,21 @@ class TaskModel extends Task {
       final dynamic rawAssignments = map['assignments'];
       if (rawAssignments is String) {
         try {
-          final List<dynamic> decoded = jsonDecode(rawAssignments) as List<dynamic>;
+          final List<dynamic> decoded =
+              jsonDecode(rawAssignments) as List<dynamic>;
           assignmentsList = decoded
-              .map((e) => TaskAssignment.fromMap(Map<String, dynamic>.from(e as Map)))
+              .map(
+                (e) =>
+                    TaskAssignment.fromMap(Map<String, dynamic>.from(e as Map)),
+              )
               .toList();
         } catch (_) {}
       } else if (rawAssignments is List) {
         assignmentsList = rawAssignments
-            .map((e) => TaskAssignment.fromMap(Map<String, dynamic>.from(e as Map)))
+            .map(
+              (e) =>
+                  TaskAssignment.fromMap(Map<String, dynamic>.from(e as Map)),
+            )
             .toList();
       }
     }

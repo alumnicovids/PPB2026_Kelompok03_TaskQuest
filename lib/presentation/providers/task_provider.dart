@@ -124,7 +124,9 @@ class TaskProvider with ChangeNotifier {
     try {
       await _taskRepository.approveTask(taskId, studentUserId, xpReward);
       _submittedTasks.removeWhere(
-        (t) => t.id == taskId && t.userId.toLowerCase() == studentUserId.toLowerCase(),
+        (t) =>
+            t.id == taskId &&
+            t.userId.toLowerCase() == studentUserId.toLowerCase(),
       );
     } catch (e) {
       print('approveQuest error: $e');
@@ -141,7 +143,9 @@ class TaskProvider with ChangeNotifier {
     try {
       await _taskRepository.rejectTask(taskId, studentUserId);
       _submittedTasks.removeWhere(
-        (t) => t.id == taskId && t.userId.toLowerCase() == studentUserId.toLowerCase(),
+        (t) =>
+            t.id == taskId &&
+            t.userId.toLowerCase() == studentUserId.toLowerCase(),
       );
     } catch (e) {
       print('rejectQuest error: $e');

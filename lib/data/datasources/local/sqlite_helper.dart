@@ -96,16 +96,12 @@ class SqliteHelper {
     }
     if (oldVersion < 4) {
       try {
-        await db.execute(
-          'ALTER TABLE $tableTasks ADD COLUMN assignments TEXT',
-        );
+        await db.execute('ALTER TABLE $tableTasks ADD COLUMN assignments TEXT');
       } catch (_) {}
     }
     if (oldVersion < 5) {
       try {
-        await db.execute(
-          'ALTER TABLE $tableTasks ADD COLUMN assignments TEXT',
-        );
+        await db.execute('ALTER TABLE $tableTasks ADD COLUMN assignments TEXT');
       } catch (_) {}
     }
   }

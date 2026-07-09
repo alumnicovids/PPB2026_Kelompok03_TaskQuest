@@ -284,11 +284,15 @@ class _TaskListScreenState extends State<TaskListScreen> {
                                           .where((s) => s.id == selectedStudent)
                                           .toList();
 
-                                final assignments = targets.map((s) => TaskAssignment(
-                                  studentId: s.id,
-                                  studentUsername: s.username,
-                                  status: 'pending',
-                                )).toList();
+                                final assignments = targets
+                                    .map(
+                                      (s) => TaskAssignment(
+                                        studentId: s.id,
+                                        studentUsername: s.username,
+                                        status: 'pending',
+                                      ),
+                                    )
+                                    .toList();
 
                                 final newTask = Task(
                                   id: const Uuid().v4(),
@@ -553,7 +557,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
       child: Card(
         margin: const EdgeInsets.only(bottom: 12),
         child: ListTile(
-          onTap: () => context.go('/tasks/${task.id}${authProvider.role != 'mahasiswa' ? '?userId=${task.userId}' : ''}'),
+          onTap: () => context.go(
+            '/tasks/${task.id}${authProvider.role != 'mahasiswa' ? '?userId=${task.userId}' : ''}',
+          ),
           leading: Icon(leadingIcon, color: statusColor),
           title: Text(
             task.title,
@@ -567,19 +573,30 @@ class _TaskListScreenState extends State<TaskListScreen> {
             children: [
               const SizedBox(height: 2),
               Text('${task.category} · ${task.xpReward} XP'),
-              if (authProvider.role != 'mahasiswa' && task.studentUsername != null) ...[
+              if (authProvider.role != 'mahasiswa' &&
+                  task.studentUsername != null) ...[
                 const SizedBox(height: 6),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 6,
+                    vertical: 2,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFC15F3C).withAlpha(30),
                     borderRadius: BorderRadius.circular(4),
-                    border: Border.all(color: const Color(0xFFC15F3C), width: 0.5),
+                    border: Border.all(
+                      color: const Color(0xFFC15F3C),
+                      width: 0.5,
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.person, size: 10, color: Color(0xFFC15F3C)),
+                      const Icon(
+                        Icons.person,
+                        size: 10,
+                        color: Color(0xFFC15F3C),
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         'Student: @${task.studentUsername}',
