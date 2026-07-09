@@ -553,7 +553,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
       child: Card(
         margin: const EdgeInsets.only(bottom: 12),
         child: ListTile(
-          onTap: () => context.go('/tasks/${task.id}'),
+          onTap: () => context.go('/tasks/${task.id}${authProvider.role != 'mahasiswa' ? '?userId=${task.userId}' : ''}'),
           leading: Icon(leadingIcon, color: statusColor),
           title: Text(
             task.title,

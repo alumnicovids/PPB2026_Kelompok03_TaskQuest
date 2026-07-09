@@ -38,7 +38,8 @@ class AppRouter {
         path: '/tasks/:id',
         builder: (context, state) {
           final id = state.pathParameters['id'] ?? '';
-          return TaskDetailScreen(taskId: id);
+          final studentUserId = state.uri.queryParameters['userId'];
+          return TaskDetailScreen(taskId: id, studentUserId: studentUserId);
         },
       ),
       GoRoute(

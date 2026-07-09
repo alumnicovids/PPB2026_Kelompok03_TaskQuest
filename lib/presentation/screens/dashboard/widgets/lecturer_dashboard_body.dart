@@ -366,7 +366,7 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
                   ],
                 ),
                 ElevatedButton(
-                  onPressed: () => context.push('/tasks/${task.id}'),
+                  onPressed: () => context.push('/tasks/${task.id}?userId=${task.userId}'),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,

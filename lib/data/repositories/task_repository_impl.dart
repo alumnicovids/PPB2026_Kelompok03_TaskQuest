@@ -279,28 +279,66 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   Future<void> _syncSingleTaskToRemote(TaskModel taskModel) async {
-    final localPath = taskModel.proofPhotoPath;
     final uploadMap = taskModel.toSupabaseMap();
+    List<TaskAssignment>? updatedAssignments = taskModel.assignments != null 
+        ? List.from(taskModel.assignments!) 
+        : null;
 
-    if (localPath != null &&
-        !localPath.startsWith('http') &&
-        File(localPath).existsSync()) {
+    final rootLocalPath = taskModel.proofPhotoPath;
+    String? rootPublicUrl;
+    if (rootLocalPath != null &&
+        !rootLocalPath.startsWith('http') &&
+        File(rootLocalPath).existsSync()) {
       try {
-        final fileExtension = localPath.split('.').last;
+        final fileExtension = rootLocalPath.split('.').last;
         final fileName = '${taskModel.id}_proof.$fileExtension';
-        final publicUrl = await _supabaseRemoteDatasource.uploadTaskProof(
-          localPath,
+        rootPublicUrl = await _supabaseRemoteDatasource.uploadTaskProof(
+          rootLocalPath,
           fileName,
         );
-        uploadMap['proof_photo_path'] = publicUrl;
-      } catch (e) {
-        // If image upload fails (e.g. storage bucket not configured),
-        // we still want to proceed with updating the task metadata on Supabase
-        // so that the lecturer can see the submission.
+        uploadMap['proof_photo_path'] = rootPublicUrl;
+      } catch (_) {
+        // Swallowed
+      }
+    }
+
+    if (updatedAssignments != null) {
+      bool assignmentsChanged = false;
+      for (int i = 0; i < updatedAssignments.length; i++) {
+        final assignment = updatedAssignments[i];
+        final assLocalPath = assignment.proofPhotoPath;
+        if (assLocalPath != null &&
+            !assLocalPath.startsWith('http') &&
+            File(assLocalPath).existsSync()) {
+          try {
+            final fileExtension = assLocalPath.split('.').last;
+            final fileName = '${taskModel.id}_${assignment.studentId}_proof.$fileExtension';
+            final publicUrl = await _supabaseRemoteDatasource.uploadTaskProof(
+              assLocalPath,
+              fileName,
+            );
+            updatedAssignments[i] = assignment.copyWith(proofPhotoPath: publicUrl);
+            assignmentsChanged = true;
+          } catch (_) {
+            // Swallowed
+          }
+        }
+      }
+      if (assignmentsChanged) {
+        uploadMap['assignments'] = updatedAssignments.map((e) => e.toMap()).toList();
       }
     }
 
     await _supabaseRemoteDatasource.upsertTask(uploadMap);
     await _sqliteTaskDatasource.markAsSynced(taskModel.id);
+
+    if (rootPublicUrl != null || updatedAssignments != null) {
+      final updatedLocalTask = taskModel.copyWith(
+        proofPhotoPath: rootPublicUrl ?? taskModel.proofPhotoPath,
+        assignments: updatedAssignments ?? taskModel.assignments,
+        isSynced: true,
+      );
+      await _sqliteTaskDatasource.insertTask(TaskModel.fromEntity(updatedLocalTask));
+    }
   }
 }

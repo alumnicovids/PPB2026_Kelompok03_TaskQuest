@@ -52,10 +52,19 @@ class SupabaseRemoteDatasource {
   Future<List<Map<String, dynamic>>> getTasks(String userId) async {
     final response = await _supabaseClient
         .from('tasks')
-        .select()
-        .or('user_id.eq.$userId,assignments.cs.[{"student_id":"$userId"}]')
+        .select('*, users(username)')
         .order('created_at', ascending: false);
-    return List<Map<String, dynamic>>.from(response);
+    final List<Map<String, dynamic>> allTasks = List<Map<String, dynamic>>.from(response);
+    return allTasks.where((task) {
+      if (task['user_id'] == userId) return true;
+      final assignmentsList = task['assignments'];
+      if (assignmentsList != null) {
+        if (assignmentsList is List) {
+          return assignmentsList.any((a) => a is Map && a['student_id'] == userId);
+        }
+      }
+      return false;
+    }).toList();
   }
 
   Future<void> upsertTask(Map<String, dynamic> taskData) async {
