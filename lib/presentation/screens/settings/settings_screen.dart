@@ -51,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Failed to update username: $e'),
-            backgroundColor: const Color(0xFFB3492F),
+            backgroundColor: Color(0xFFC62828),
           ),
         );
       }
@@ -65,6 +65,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final authProvider = Provider.of<AuthProvider>(context);
     final currentRole = authProvider.role ?? 'mahasiswa';
+    final primaryColor = Theme.of(context).colorScheme.primary;
 
     return Scaffold(
       appBar: AppBar(
@@ -83,7 +84,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(
               'Profile Settings',
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: const Color(0xFFC15F3C),
+                color: primaryColor,
               ),
             ),
             const SizedBox(height: 16),
@@ -136,7 +137,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(
               'Appearance',
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: const Color(0xFFC15F3C),
+                color: primaryColor,
               ),
             ),
             const SizedBox(height: 16),
@@ -152,31 +153,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       value: ThemeMode.system,
                       groupValue: themeProvider.themeMode,
-                      activeColor: const Color(0xFFC15F3C),
+                      activeColor: primaryColor,
                       onChanged: (mode) {
                         if (mode != null) themeProvider.setThemeMode(mode);
                       },
                     ),
-                    const Divider(height: 1),
+                    Divider(height: 1, color: Theme.of(context).dividerColor),
                     RadioListTile<ThemeMode>(
                       title: const Text('Light Mode'),
-                      subtitle: const Text('A classic light RPG paper look'),
+                      subtitle: const Text('Parchment by day — classic RPG scroll'),
                       value: ThemeMode.light,
                       groupValue: themeProvider.themeMode,
-                      activeColor: const Color(0xFFC15F3C),
+                      activeColor: primaryColor,
                       onChanged: (mode) {
                         if (mode != null) themeProvider.setThemeMode(mode);
                       },
                     ),
-                    const Divider(height: 1),
+                    Divider(height: 1, color: Theme.of(context).dividerColor),
                     RadioListTile<ThemeMode>(
                       title: const Text('Dark Mode'),
                       subtitle: const Text(
-                        'Easy on the eyes for night adventuring',
+                        'Dungeon dark — for night adventuring',
                       ),
                       value: ThemeMode.dark,
                       groupValue: themeProvider.themeMode,
-                      activeColor: const Color(0xFFC15F3C),
+                      activeColor: primaryColor,
                       onChanged: (mode) {
                         if (mode != null) themeProvider.setThemeMode(mode);
                       },
@@ -191,7 +192,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Text(
               'Account Information',
               style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: const Color(0xFFC15F3C),
+                color: primaryColor,
               ),
             ),
             const SizedBox(height: 16),
@@ -206,7 +207,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       currentRole.toUpperCase(),
                       Icons.shield_outlined,
                     ),
-                    const Divider(height: 20),
+                    Divider(height: 20, color: Theme.of(context).dividerColor),
                     _buildInfoRow(
                       context,
                       'User ID',
@@ -229,15 +230,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     String value,
     IconData icon,
   ) {
+    final secondaryColor = Theme.of(context).textTheme.bodyMedium?.color;
     return Row(
       children: [
-        Icon(icon, size: 22, color: const Color(0xFF6B6862)),
+        Icon(icon, size: 22, color: secondaryColor),
         const SizedBox(width: 12),
         Text(
           '$label: ',
-          style: const TextStyle(
+          style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Color(0xFF6B6862),
+            color: secondaryColor,
+            fontFamily: 'Inter',
           ),
         ),
         Expanded(

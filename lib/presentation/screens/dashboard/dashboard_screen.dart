@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/utils/gyroscope_service.dart';
 import '../../../data/datasources/remote/quotes_datasource.dart';
 import '../../../core/utils/character_asset_helper.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/character_provider.dart';
 import '../../providers/task_provider.dart';
@@ -268,8 +269,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         body: const AdminDashboardBody(),
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: 0,
-          selectedItemColor: const Color(0xFFC15F3C),
-          unselectedItemColor: const Color(0xFF6B6862),
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.dashboard),
@@ -340,9 +339,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   // Welcome Text
                   Text(
                     'Welcome back, $username!',
-                    style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      fontSize: 24,
-                      color: const Color(0xFFC15F3C),
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                      color: AppColors.ancientGold,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -363,7 +361,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           children: [
                             CircleAvatar(
                               radius: 40,
-                              backgroundColor: const Color(0xFFE0A98C),
+                              backgroundColor: AppColors.weatheredStone,
                               child: ClipOval(
                                 child: Image.asset(
                                   CharacterAssetHelper.getAssetPath(
@@ -386,7 +384,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                           ? Icons.bolt_rounded
                                           : Icons.shield_rounded,
                                       size: 40,
-                                      color: const Color(0xFFC15F3C),
+                                      color: AppColors.ancientGold,
                                     );
                                   },
                                 ),
@@ -410,8 +408,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                         .textTheme
                                         .bodyMedium
                                         ?.copyWith(
-                                          color: const Color(0xFF6B6862),
-                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.ancientGold,
+                                          fontWeight: FontWeight.w600,
                                         ),
                                   ),
                                   const SizedBox(height: 8),
@@ -428,14 +426,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                                 ? character.currentXp /
                                                       character.xpToNextLevel
                                                 : 0.0,
-                                            backgroundColor: const Color(
-                                              0xFFEDE9DE,
-                                            ),
-                                            valueColor:
-                                                const AlwaysStoppedAnimation<
-                                                  Color
-                                                >(Color(0xFFC15F3C)),
-                                            minHeight: 8,
+                                            minHeight: 10,
                                           ),
                                         ),
                                       ),
@@ -469,7 +460,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             children: [
                               const Icon(
                                 Icons.screen_rotation,
-                                color: Color(0xFFC15F3C),
+                                color: AppColors.ancientGold,
                               ),
                               const SizedBox(width: 12),
                               Column(
@@ -486,8 +477,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     'y: ${_gyroscopeService!.y.toStringAsFixed(2)}  '
                                     'z: ${_gyroscopeService!.z.toStringAsFixed(2)}',
                                     style: const TextStyle(
+                                      fontFamily: 'Inter',
                                       fontSize: 12,
-                                      color: Color(0xFF6B6862),
+                                      color: AppColors.dustyScript,
                                     ),
                                   ),
                                 ],
@@ -502,39 +494,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   // Quote of the Day
                   Card(
-                    color: const Color(0xFFEDE9DE).withAlpha(120),
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: _isLoadingQuote
-                          ? const Center(child: CircularProgressIndicator())
+                          ? const Center(
+                              child: CircularProgressIndicator(
+                                color: AppColors.ancientGold,
+                              ),
+                            )
                           : Column(
                               children: [
                                 const Text(
-                                  'QUOTE OF THE DAY',
+                                  '✦  ORACLE OF THE DAY  ✦',
                                   style: TextStyle(
+                                    fontFamily: 'Cinzel',
                                     fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFFC15F3C),
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.ancientGold,
                                     letterSpacing: 1.5,
                                   ),
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  _quote?['quote'] ?? 'Keep moving forward!',
+                                  _quote?['quote'] ?? 'A hero is forged through action, not intention.',
                                   style: const TextStyle(
+                                    fontFamily: 'Inter',
                                     fontStyle: FontStyle.italic,
                                     fontSize: 14,
-                                    height: 1.4,
+                                    height: 1.5,
+                                    color: AppColors.fadedInk,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
                                 const SizedBox(height: 8),
                                 Text(
-                                  '- ${_quote?['author'] ?? 'Unknown'}',
-                                  style: TextStyle(
+                                  '— ${_quote?['author'] ?? 'Unknown Sage'}',
+                                  style: const TextStyle(
+                                    fontFamily: 'Inter',
                                     fontSize: 12,
-                                    color: Colors.grey[700],
-                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.dustyScript,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                               ],
@@ -598,8 +597,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 0,
-        selectedItemColor: const Color(0xFFC15F3C),
-        unselectedItemColor: const Color(0xFF6B6862),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
@@ -632,7 +629,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(icon, color: const Color(0xFFC15F3C)),
+            Icon(icon, color: AppColors.ancientGold),
             const SizedBox(height: 8),
             Text(value, style: Theme.of(context).textTheme.displaySmall),
             Text(title, style: Theme.of(context).textTheme.labelSmall),
