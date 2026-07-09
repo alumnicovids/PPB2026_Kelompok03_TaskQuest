@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/character.dart';
 import '../../domain/entities/task.dart';
@@ -14,21 +15,30 @@ class CharacterProvider with ChangeNotifier {
   final LevelUpUseCase _levelUpUseCase;
   final CharacterRepository _characterRepository;
   final XpLogRepository _xpLogRepository;
+  final SharedPreferences _sharedPreferences;
 
   Character? _character;
   List<Character> _allCharacters = [];
   bool _isLoading = false;
+  int? _pendingLevelUpLevel;
 
   CharacterProvider(
     this._calculateXpUseCase,
     this._levelUpUseCase,
     this._characterRepository,
     this._xpLogRepository,
+    this._sharedPreferences,
   );
 
   Character? get character => _character;
   List<Character> get allCharacters => _allCharacters;
   bool get isLoading => _isLoading;
+  int? get pendingLevelUpLevel => _pendingLevelUpLevel;
+
+  void consumeLevelUp() {
+    _pendingLevelUpLevel = null;
+    notifyListeners();
+  }
 
   void loadMockCharacter(String userId) {
     _character = Character(
@@ -49,6 +59,14 @@ class CharacterProvider with ChangeNotifier {
     notifyListeners();
     try {
       final char = await _characterRepository.getCharacter(userId);
+      if (char != null) {
+        final lastAckKey = 'last_ack_level_$userId';
+        final lastAck = _sharedPreferences.getInt(lastAckKey);
+        if (lastAck != null && char.level > lastAck) {
+          _pendingLevelUpLevel = char.level;
+        }
+        await _sharedPreferences.setInt(lastAckKey, char.level);
+      }
       _character = char;
     } catch (_) {
       if (_character == null) {
@@ -76,7 +94,13 @@ class CharacterProvider with ChangeNotifier {
       );
       await _characterRepository.saveCharacter(newChar);
       _character = newChar;
-      print('Initial character created: classType=$classType for userId=$userId');
+
+      final lastAckKey = 'last_ack_level_$userId';
+      await _sharedPreferences.setInt(lastAckKey, 1);
+
+      print(
+        'Initial character created: classType=$classType for userId=$userId',
+      );
     } catch (e) {
       print('ERROR creating initial character: $e');
     } finally {
@@ -123,6 +147,12 @@ class CharacterProvider with ChangeNotifier {
     // Save changes using repository
     await _characterRepository.saveCharacter(updatedChar);
     _character = updatedChar;
+
+    if (levelUpResult.leveledUp) {
+      _pendingLevelUpLevel = levelUpResult.newLevel;
+      final lastAckKey = 'last_ack_level_${_character!.userId}';
+      await _sharedPreferences.setInt(lastAckKey, levelUpResult.newLevel);
+    }
 
     // Create and save XP Log
     final xpLog = XpLog(

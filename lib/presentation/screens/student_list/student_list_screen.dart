@@ -5,7 +5,6 @@ import '../../providers/auth_provider.dart';
 import '../../providers/character_provider.dart';
 import '../../../domain/entities/user_entity.dart';
 import '../../../domain/entities/character.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/character_asset_helper.dart';
 
 class StudentListScreen extends StatefulWidget {
@@ -132,7 +131,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
                               final student = filteredStudents[index];
                               // Find student character (case-insensitive userId match)
                               final character = characters.firstWhere(
-                                (c) => c.userId.toLowerCase() == student.id.toLowerCase(),
+                                (c) =>
+                                    c.userId.toLowerCase() ==
+                                    student.id.toLowerCase(),
                                 orElse: () => Character(
                                   id: '',
                                   userId: student.id,

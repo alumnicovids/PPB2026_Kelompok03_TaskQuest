@@ -116,6 +116,7 @@ void main() async {
             levelUpUseCase,
             characterRepository,
             xpLogRepository,
+            sharedPreferences,
           ),
         ),
       ],

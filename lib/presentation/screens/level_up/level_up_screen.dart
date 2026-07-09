@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import '../../providers/character_provider.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/character_asset_helper.dart';
 
 class Particle {

@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/gyroscope_service.dart';
 import '../../../data/datasources/remote/quotes_datasource.dart';
-import '../../../core/constants/app_constants.dart';
 import '../../../core/utils/character_asset_helper.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/character_provider.dart';
@@ -52,25 +51,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
             context,
             listen: false,
           );
-          final oldLevel = charProvider.character?.level ?? 1;
+          final taskProvider = Provider.of<TaskProvider>(
+            context,
+            listen: false,
+          );
+
+          // Check if there is already a pending level up from login screen
+          if (charProvider.pendingLevelUpLevel != null) {
+            final pendingLevel = charProvider.pendingLevelUpLevel!;
+            charProvider.consumeLevelUp();
+            _triggerLevelUpOverlay(pendingLevel, 0);
+          }
 
           // Load cached character first for quick display
           await charProvider.loadCharacter(userId);
-          Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
+          taskProvider.loadTasks(userId);
 
           // Sync tasks from remote
-          await Provider.of<TaskProvider>(
-            context,
-            listen: false,
-          ).syncTasks(userId, role: role);
+          await taskProvider.syncTasks(userId, role: role);
 
           // After sync, refresh character from remote to pick up any XP changes
           // made by dosen approval
           if (mounted) {
             await charProvider.loadCharacter(userId);
-            final newLevel = charProvider.character?.level ?? 1;
-            if (newLevel > oldLevel) {
-              _triggerLevelUpOverlay(newLevel, 0);
+            if (charProvider.pendingLevelUpLevel != null) {
+              final pendingLevel = charProvider.pendingLevelUpLevel!;
+              charProvider.consumeLevelUp();
+              _triggerLevelUpOverlay(pendingLevel, 0);
             }
           }
         } else if (role == 'dosen') {
@@ -150,7 +157,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
           context,
           listen: false,
         );
-        final oldLevel = charProvider.character?.level ?? 1;
 
         await Provider.of<TaskProvider>(
           context,
@@ -158,9 +164,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ).syncTasks(userId, role: role);
         if (mounted) {
           await charProvider.loadCharacter(userId);
-          final newLevel = charProvider.character?.level ?? 1;
-          if (newLevel > oldLevel) {
-            _triggerLevelUpOverlay(newLevel, 0);
+          if (charProvider.pendingLevelUpLevel != null) {
+            final pendingLevel = charProvider.pendingLevelUpLevel!;
+            charProvider.consumeLevelUp();
+            _triggerLevelUpOverlay(pendingLevel, 0);
           }
         }
       } else if (role == 'dosen') {

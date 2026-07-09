@@ -147,6 +147,7 @@ void main() {
               LevelUpUseCase(),
               charRepo,
               xpLogRepo,
+              sharedPrefs,
             ),
           ),
         ],
