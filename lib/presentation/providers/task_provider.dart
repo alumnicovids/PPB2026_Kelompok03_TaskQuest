@@ -156,8 +156,10 @@ class TaskProvider with ChangeNotifier {
       } else {
         _tasks = await _taskRepository.getAllTasks();
       }
-    } catch (_) {
-      // Ignore background sync errors
+      print('Provider sync successful. Total tasks loaded: ${_tasks.length}');
+    } catch (e, stack) {
+      print('TaskProvider syncTasks error: $e');
+      print(stack);
     } finally {
       _isLoading = false;
       notifyListeners();

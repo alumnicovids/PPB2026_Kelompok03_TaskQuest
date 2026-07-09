@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseRemoteDatasource {
@@ -50,21 +51,34 @@ class SupabaseRemoteDatasource {
 
   // === Tasks CRUD ===
   Future<List<Map<String, dynamic>>> getTasks(String userId) async {
+    print('RemoteDatasource.getTasks called for userId: $userId');
     final response = await _supabaseClient
         .from('tasks')
         .select('*, users(username)')
         .order('created_at', ascending: false);
     final List<Map<String, dynamic>> allTasks = List<Map<String, dynamic>>.from(response);
-    return allTasks.where((task) {
+    print('RemoteDatasource.getTasks total remote tasks: ${allTasks.length}');
+    
+    final filtered = allTasks.where((task) {
       if (task['user_id'] == userId) return true;
-      final assignmentsList = task['assignments'];
-      if (assignmentsList != null) {
-        if (assignmentsList is List) {
-          return assignmentsList.any((a) => a is Map && a['student_id'] == userId);
+      final assignmentsData = task['assignments'];
+      if (assignmentsData != null) {
+        List<dynamic>? list;
+        if (assignmentsData is List) {
+          list = assignmentsData;
+        } else if (assignmentsData is String) {
+          try {
+            list = jsonDecode(assignmentsData) as List<dynamic>;
+          } catch (_) {}
+        }
+        if (list != null) {
+          return list.any((a) => a is Map && a['student_id'] == userId);
         }
       }
       return false;
     }).toList();
+    print('RemoteDatasource.getTasks total filtered tasks: ${filtered.length}');
+    return filtered;
   }
 
   Future<void> upsertTask(Map<String, dynamic> taskData) async {

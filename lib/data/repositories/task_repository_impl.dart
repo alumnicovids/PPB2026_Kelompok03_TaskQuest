@@ -114,17 +114,28 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Future<void> syncTasks(String userId) async {
-    // 1. Push all unsynced local tasks to remote Supabase
-    final unsyncedTasks = await _sqliteTaskDatasource.getUnsyncedTasks();
-    for (final task in unsyncedTasks) {
-      await _syncSingleTaskToRemote(task);
-    }
+    try {
+      print('=== STARTING SYNC FOR USER: $userId ===');
+      final unsyncedTasks = await _sqliteTaskDatasource.getUnsyncedTasks();
+      print('Found ${unsyncedTasks.length} unsynced local tasks');
+      for (final task in unsyncedTasks) {
+        print('Syncing local task to remote: ${task.id}, title: ${task.title}');
+        await _syncSingleTaskToRemote(task);
+      }
 
-    // 2. Pull remote tasks from Supabase and cache/save to local SQLite
-    final remoteTasksData = await _supabaseRemoteDatasource.getTasks(userId);
-    for (final data in remoteTasksData) {
-      final remoteTask = TaskModel.fromMap(data).copyWith(isSynced: true);
-      await _sqliteTaskDatasource.insertTask(TaskModel.fromEntity(remoteTask));
+      final remoteTasksData = await _supabaseRemoteDatasource.getTasks(userId);
+      print('Retrieved ${remoteTasksData.length} tasks from remote Supabase');
+      for (final data in remoteTasksData) {
+        final remoteTask = TaskModel.fromMap(data).copyWith(isSynced: true);
+        print('Caching remote task to SQLite: ${remoteTask.id}, title: ${remoteTask.title}');
+        await _sqliteTaskDatasource.insertTask(TaskModel.fromEntity(remoteTask));
+      }
+      print('=== SYNC COMPLETED SUCCESSFULLY ===');
+    } catch (e, stack) {
+      print('=== SYNC FAILED ===');
+      print('Error during sync: $e');
+      print('Stacktrace: $stack');
+      rethrow;
     }
   }
 
