@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import '../../providers/character_provider.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/character_asset_helper.dart';
 
 class Particle {
   double x;
@@ -197,8 +198,11 @@ class _LevelUpScreenState extends State<LevelUpScreen>
                             ),
                           ),
                           child: ClipOval(
-                            child: Image.network(
-                              '${AppConstants.supabaseUrl}/storage/v1/object/public/Character-avatars/${className.toLowerCase()}_stage$appearanceStage.png',
+                            child: Image.asset(
+                              CharacterAssetHelper.getAssetPath(
+                                className.toLowerCase(),
+                                appearanceStage,
+                              ),
                               fit: BoxFit.cover,
                               width: 100,
                               height: 100,

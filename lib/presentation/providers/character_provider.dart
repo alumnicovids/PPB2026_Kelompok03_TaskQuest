@@ -65,7 +65,7 @@ class CharacterProvider with ChangeNotifier {
     notifyListeners();
     try {
       final newChar = Character(
-        id: 'char-$userId',
+        id: const Uuid().v4(),
         userId: userId,
         classType: classType,
         level: 1,
@@ -76,6 +76,9 @@ class CharacterProvider with ChangeNotifier {
       );
       await _characterRepository.saveCharacter(newChar);
       _character = newChar;
+      print('Initial character created: classType=$classType for userId=$userId');
+    } catch (e) {
+      print('ERROR creating initial character: $e');
     } finally {
       _isLoading = false;
       notifyListeners();

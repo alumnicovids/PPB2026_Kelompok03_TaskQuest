@@ -6,6 +6,7 @@ import '../../providers/character_provider.dart';
 import '../../../domain/entities/user_entity.dart';
 import '../../../domain/entities/character.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../core/utils/character_asset_helper.dart';
 
 class StudentListScreen extends StatefulWidget {
   const StudentListScreen({super.key});
@@ -129,9 +130,9 @@ class _StudentListScreenState extends State<StudentListScreen> {
                             itemCount: filteredStudents.length,
                             itemBuilder: (context, index) {
                               final student = filteredStudents[index];
-                              // Find student character
+                              // Find student character (case-insensitive userId match)
                               final character = characters.firstWhere(
-                                (c) => c.userId == student.id,
+                                (c) => c.userId.toLowerCase() == student.id.toLowerCase(),
                                 orElse: () => Character(
                                   id: '',
                                   userId: student.id,
@@ -322,8 +323,11 @@ class _StudentListScreenState extends State<StudentListScreen> {
                 radius: 28,
                 backgroundColor: const Color(0xFFEDE9DE),
                 child: ClipOval(
-                  child: Image.network(
-                    '${AppConstants.supabaseUrl}/storage/v1/object/public/Character-avatars/${classType}_stage${character.appearanceStage}.png',
+                  child: Image.asset(
+                    CharacterAssetHelper.getAssetPath(
+                      classType,
+                      character.appearanceStage,
+                    ),
                     fit: BoxFit.cover,
                     width: 56,
                     height: 56,

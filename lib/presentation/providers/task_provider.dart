@@ -120,29 +120,35 @@ class TaskProvider with ChangeNotifier {
     int xpReward,
   ) async {
     _isLoading = true;
-    notifyListeners();
+    Future.microtask(notifyListeners);
     try {
       await _taskRepository.approveTask(taskId, studentUserId, xpReward);
-      _submittedTasks.removeWhere((t) => t.id == taskId && t.userId == studentUserId);
-    } catch (_) {
+      _submittedTasks.removeWhere(
+        (t) => t.id == taskId && t.userId.toLowerCase() == studentUserId.toLowerCase(),
+      );
+    } catch (e) {
+      print('approveQuest error: $e');
       rethrow;
     } finally {
       _isLoading = false;
-      notifyListeners();
+      Future.microtask(notifyListeners);
     }
   }
 
   Future<void> rejectQuest(String taskId, String studentUserId) async {
     _isLoading = true;
-    notifyListeners();
+    Future.microtask(notifyListeners);
     try {
       await _taskRepository.rejectTask(taskId, studentUserId);
-      _submittedTasks.removeWhere((t) => t.id == taskId && t.userId == studentUserId);
-    } catch (_) {
+      _submittedTasks.removeWhere(
+        (t) => t.id == taskId && t.userId.toLowerCase() == studentUserId.toLowerCase(),
+      );
+    } catch (e) {
+      print('rejectQuest error: $e');
       rethrow;
     } finally {
       _isLoading = false;
-      notifyListeners();
+      Future.microtask(notifyListeners);
     }
   }
 

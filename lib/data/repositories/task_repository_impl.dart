@@ -195,6 +195,8 @@ class TaskRepositoryImpl implements TaskRepository {
     String studentUserId,
     int xpReward,
   ) async {
+    print('=== APPROVE TASK START: taskId=$taskId, studentId=$studentUserId, xpReward=$xpReward ===');
+
     // 1. Approve task status in remote DB
     final rawTasks = await _supabaseRemoteDatasource.getAllTasks();
     final map = rawTasks.firstWhere((m) => m['id'] == taskId);
@@ -211,6 +213,9 @@ class TaskRepositoryImpl implements TaskRepository {
 
         final updatedTask = task.copyWith(assignments: updatedAssignments);
         await _supabaseRemoteDatasource.upsertTask(TaskModel.fromEntity(updatedTask).toSupabaseMap());
+        print('Task assignment status updated to completed for student: $studentUserId');
+      } else {
+        print('WARNING: No assignment found for studentId: $studentUserId');
       }
     } else {
       await _supabaseRemoteDatasource.updateTaskStatus(
@@ -218,35 +223,65 @@ class TaskRepositoryImpl implements TaskRepository {
         'completed',
         DateTime.now().toIso8601String(),
       );
+      print('Task status updated to completed (no assignments)');
     }
 
     // 2. Fetch student character and update level/XP
-    final charData = await _supabaseRemoteDatasource.getCharacterByUserId(
+    print('Fetching character for studentId: $studentUserId');
+    var charData = await _supabaseRemoteDatasource.getCharacterByUserId(
       studentUserId,
     );
-    if (charData != null) {
-      final currentLevel = charData['level'] as int? ?? 1;
-      final currentXp = charData['current_xp'] as int? ?? 0;
+    print('Character data found: ${charData != null ? 'YES (level=${charData['level']}, xp=${charData['current_xp']})' : 'NULL'}');
 
-      final levelUpResult = LevelUpUseCase().execute(
-        LevelUpParams(
-          currentLevel: currentLevel,
-          currentXp: currentXp,
-          xpGained: xpReward,
-        ),
-      );
-
-      final updatedChar = Map<String, dynamic>.from(charData);
-      updatedChar['level'] = levelUpResult.newLevel;
-      updatedChar['current_xp'] = levelUpResult.newXp;
-      updatedChar['appearance_stage'] = levelUpResult.newAppearanceStage;
-      updatedChar['updated_at'] = DateTime.now().toIso8601String();
-      
-      final xpToNext = (100 * pow(levelUpResult.newLevel, 1.3)).round();
-      updatedChar['xp_to_next_level'] = xpToNext;
-
-      await _supabaseRemoteDatasource.upsertCharacter(updatedChar);
+    if (charData == null) {
+      // Character not found - create a default one so XP can be added
+      print('Character not found, creating default character for student');
+      final newCharId = const Uuid().v4();
+      final defaultChar = {
+        'id': newCharId,
+        'user_id': studentUserId,
+        'class_type': 'knight',
+        'level': 1,
+        'current_xp': 0,
+        'xp_to_next_level': 100,
+        'appearance_stage': 1,
+        'updated_at': DateTime.now().toIso8601String(),
+      };
+      try {
+        await _supabaseRemoteDatasource.upsertCharacter(defaultChar);
+        print('Default character created successfully');
+      } catch (e) {
+        print('ERROR creating default character: $e');
+        rethrow;
+      }
+      charData = defaultChar;
     }
+
+    final currentLevel = charData['level'] as int? ?? 1;
+    final currentXp = charData['current_xp'] as int? ?? 0;
+
+    print('Before XP update: level=$currentLevel, currentXp=$currentXp, xpReward=$xpReward');
+
+    final levelUpResult = LevelUpUseCase().execute(
+      LevelUpParams(
+        currentLevel: currentLevel,
+        currentXp: currentXp,
+        xpGained: xpReward,
+      ),
+    );
+
+    final updatedChar = Map<String, dynamic>.from(charData);
+    updatedChar['level'] = levelUpResult.newLevel;
+    updatedChar['current_xp'] = levelUpResult.newXp;
+    updatedChar['appearance_stage'] = levelUpResult.newAppearanceStage;
+    updatedChar['updated_at'] = DateTime.now().toIso8601String();
+    
+    final xpToNext = (100 * pow(levelUpResult.newLevel, 1.3)).round();
+    updatedChar['xp_to_next_level'] = xpToNext;
+
+    print('After XP update: newLevel=${levelUpResult.newLevel}, newXp=${levelUpResult.newXp}');
+    await _supabaseRemoteDatasource.upsertCharacter(updatedChar);
+    print('Character upserted successfully to Supabase');
 
     // 3. Log XP gain
     final xpLogId = const Uuid().v4();
@@ -259,7 +294,9 @@ class TaskRepositoryImpl implements TaskRepository {
       'created_at': DateTime.now().toIso8601String(),
     };
     await _supabaseRemoteDatasource.insertXpLog(xpLogData);
+    print('=== APPROVE TASK COMPLETE ===');
   }
+
 
   @override
   Future<void> rejectTask(String taskId, String studentUserId) async {
