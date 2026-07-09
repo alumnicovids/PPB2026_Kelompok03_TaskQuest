@@ -45,7 +45,7 @@ class FakeTaskRepository implements TaskRepository {
     int xpReward,
   ) async {}
   @override
-  Future<void> rejectTask(String taskId) async {}
+  Future<void> rejectTask(String taskId, String studentUserId) async {}
 }
 
 class FakeAuthRepository implements AuthRepository {

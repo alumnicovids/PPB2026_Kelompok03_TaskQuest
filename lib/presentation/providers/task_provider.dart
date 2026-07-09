@@ -123,7 +123,7 @@ class TaskProvider with ChangeNotifier {
     notifyListeners();
     try {
       await _taskRepository.approveTask(taskId, studentUserId, xpReward);
-      _submittedTasks.removeWhere((t) => t.id == taskId);
+      _submittedTasks.removeWhere((t) => t.id == taskId && t.userId == studentUserId);
     } catch (_) {
       rethrow;
     } finally {
@@ -132,12 +132,12 @@ class TaskProvider with ChangeNotifier {
     }
   }
 
-  Future<void> rejectQuest(String taskId) async {
+  Future<void> rejectQuest(String taskId, String studentUserId) async {
     _isLoading = true;
     notifyListeners();
     try {
-      await _taskRepository.rejectTask(taskId);
-      _submittedTasks.removeWhere((t) => t.id == taskId);
+      await _taskRepository.rejectTask(taskId, studentUserId);
+      _submittedTasks.removeWhere((t) => t.id == taskId && t.userId == studentUserId);
     } catch (_) {
       rethrow;
     } finally {

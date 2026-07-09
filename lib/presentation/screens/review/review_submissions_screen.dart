@@ -58,7 +58,7 @@ class _ReviewSubmissionsScreenState extends State<ReviewSubmissionsScreen> {
     setState(() => _isProcessing = true);
     try {
       final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-      await taskProvider.rejectQuest(task.id);
+      await taskProvider.rejectQuest(task.id, task.userId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

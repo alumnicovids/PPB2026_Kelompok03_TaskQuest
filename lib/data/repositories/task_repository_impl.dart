@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/repositories/task_repository.dart';
@@ -34,10 +35,29 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Future<List<Task>> getTasks(String userId) async {
-    // Cast to List<Task> explicitly so the runtime list type is List<Task>,
-    // not List<TaskModel> — prevents type errors on subsequent inserts.
     final models = await _sqliteTaskDatasource.getTasks(userId);
-    return List<Task>.from(models);
+    return models.map<Task>((task) {
+      if (task.assignments != null) {
+        final myAssignment = task.assignments!.firstWhere(
+          (a) => a.studentId == userId,
+          orElse: () => TaskAssignment(
+            studentId: userId,
+            studentUsername: task.studentUsername ?? '',
+            status: task.status,
+            proofPhotoPath: task.proofPhotoPath,
+            completedAt: task.completedAt,
+          ),
+        );
+        return task.copyWith(
+          userId: userId,
+          status: myAssignment.status,
+          proofPhotoPath: myAssignment.proofPhotoPath,
+          completedAt: myAssignment.completedAt,
+          studentUsername: myAssignment.studentUsername,
+        );
+      }
+      return task;
+    }).toList();
   }
 
   @override
@@ -47,7 +67,26 @@ class TaskRepositoryImpl implements TaskRepository {
 
   @override
   Future<void> updateTask(Task task) async {
-    final taskModel = TaskModel.fromEntity(task.copyWith(isSynced: false));
+    final existingTask = await _sqliteTaskDatasource.getTaskById(task.id);
+    Task updatedTask = task;
+
+    if (existingTask != null && existingTask.assignments != null) {
+      final List<TaskAssignment> updatedAssignments = List.from(existingTask.assignments!);
+      final myAssignmentIndex = updatedAssignments.indexWhere((a) => a.studentId == task.userId);
+      if (myAssignmentIndex != -1) {
+        updatedAssignments[myAssignmentIndex] = updatedAssignments[myAssignmentIndex].copyWith(
+          status: task.status,
+          proofPhotoPath: task.proofPhotoPath,
+          completedAt: task.completedAt,
+        );
+        updatedTask = existingTask.copyWith(
+          assignments: updatedAssignments,
+          isSynced: false,
+        );
+      }
+    }
+
+    final taskModel = TaskModel.fromEntity(updatedTask.copyWith(isSynced: false));
 
     // Update SQLite locally first (offline-first)
     await _sqliteTaskDatasource.updateTask(taskModel);
@@ -92,15 +131,51 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<List<Task>> getAllTasks() async {
     final rawTasks = await _supabaseRemoteDatasource.getAllTasks();
-    // Explicitly type as <Task> so the runtime list is List<Task>,
-    // not List<TaskModel> — prevents type errors when inserting Task objects.
-    return rawTasks.map<Task>((map) => TaskModel.fromMap(map)).toList();
+    final List<Task> expandedTasks = [];
+    for (final map in rawTasks) {
+      final task = TaskModel.fromMap(map);
+      if (task.assignments != null && task.assignments!.isNotEmpty) {
+        for (final assignment in task.assignments!) {
+          expandedTasks.add(task.copyWith(
+            userId: assignment.studentId,
+            status: assignment.status,
+            proofPhotoPath: assignment.proofPhotoPath,
+            completedAt: assignment.completedAt,
+            studentUsername: assignment.studentUsername,
+          ));
+        }
+      } else {
+        expandedTasks.add(task);
+      }
+    }
+    return expandedTasks;
   }
 
   @override
   Future<List<Task>> getSubmittedTasks() async {
-    final rawTasks = await _supabaseRemoteDatasource.getSubmittedTasks();
-    return rawTasks.map<Task>((map) => TaskModel.fromMap(map)).toList();
+    final rawTasks = await _supabaseRemoteDatasource.getAllTasks();
+    final List<Task> expandedTasks = [];
+    for (final map in rawTasks) {
+      final task = TaskModel.fromMap(map);
+      if (task.assignments != null && task.assignments!.isNotEmpty) {
+        for (final assignment in task.assignments!) {
+          if (assignment.status == 'submitted') {
+            expandedTasks.add(task.copyWith(
+              userId: assignment.studentId,
+              status: assignment.status,
+              proofPhotoPath: assignment.proofPhotoPath,
+              completedAt: assignment.completedAt,
+              studentUsername: assignment.studentUsername,
+            ));
+          }
+        }
+      } else {
+        if (task.status == 'submitted') {
+          expandedTasks.add(task);
+        }
+      }
+    }
+    return expandedTasks;
   }
 
   @override
@@ -110,11 +185,29 @@ class TaskRepositoryImpl implements TaskRepository {
     int xpReward,
   ) async {
     // 1. Approve task status in remote DB
-    await _supabaseRemoteDatasource.updateTaskStatus(
-      taskId,
-      'completed',
-      DateTime.now().toIso8601String(),
-    );
+    final rawTasks = await _supabaseRemoteDatasource.getAllTasks();
+    final map = rawTasks.firstWhere((m) => m['id'] == taskId);
+    final task = TaskModel.fromMap(map);
+
+    if (task.assignments != null) {
+      final List<TaskAssignment> updatedAssignments = List.from(task.assignments!);
+      final myAssignmentIndex = updatedAssignments.indexWhere((a) => a.studentId == studentUserId);
+      if (myAssignmentIndex != -1) {
+        updatedAssignments[myAssignmentIndex] = updatedAssignments[myAssignmentIndex].copyWith(
+          status: 'completed',
+          completedAt: DateTime.now(),
+        );
+
+        final updatedTask = task.copyWith(assignments: updatedAssignments);
+        await _supabaseRemoteDatasource.upsertTask(TaskModel.fromEntity(updatedTask).toSupabaseMap());
+      }
+    } else {
+      await _supabaseRemoteDatasource.updateTaskStatus(
+        taskId,
+        'completed',
+        DateTime.now().toIso8601String(),
+      );
+    }
 
     // 2. Fetch student character and update level/XP
     final charData = await _supabaseRemoteDatasource.getCharacterByUserId(
@@ -137,6 +230,9 @@ class TaskRepositoryImpl implements TaskRepository {
       updatedChar['current_xp'] = levelUpResult.newXp;
       updatedChar['appearance_stage'] = levelUpResult.newAppearanceStage;
       updatedChar['updated_at'] = DateTime.now().toIso8601String();
+      
+      final xpToNext = (100 * pow(levelUpResult.newLevel, 1.3)).round();
+      updatedChar['xp_to_next_level'] = xpToNext;
 
       await _supabaseRemoteDatasource.upsertCharacter(updatedChar);
     }
@@ -155,12 +251,31 @@ class TaskRepositoryImpl implements TaskRepository {
   }
 
   @override
-  Future<void> rejectTask(String taskId) async {
-    await _supabaseRemoteDatasource.updateTaskStatus(
-      taskId,
-      'in_progress',
-      null,
-    );
+  Future<void> rejectTask(String taskId, String studentUserId) async {
+    final rawTasks = await _supabaseRemoteDatasource.getAllTasks();
+    final map = rawTasks.firstWhere((m) => m['id'] == taskId);
+    final task = TaskModel.fromMap(map);
+
+    if (task.assignments != null) {
+      final List<TaskAssignment> updatedAssignments = List.from(task.assignments!);
+      final myAssignmentIndex = updatedAssignments.indexWhere((a) => a.studentId == studentUserId);
+      if (myAssignmentIndex != -1) {
+        updatedAssignments[myAssignmentIndex] = updatedAssignments[myAssignmentIndex].copyWith(
+          status: 'pending',
+          completedAt: null,
+          proofPhotoPath: null,
+        );
+
+        final updatedTask = task.copyWith(assignments: updatedAssignments);
+        await _supabaseRemoteDatasource.upsertTask(TaskModel.fromEntity(updatedTask).toSupabaseMap());
+      }
+    } else {
+      await _supabaseRemoteDatasource.updateTaskStatus(
+        taskId,
+        'pending',
+        null,
+      );
+    }
   }
 
   Future<void> _syncSingleTaskToRemote(TaskModel taskModel) async {

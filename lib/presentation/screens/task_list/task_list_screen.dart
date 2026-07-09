@@ -476,6 +476,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
     Task task,
     TaskProvider provider,
   ) {
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
     Color priorityColor;
     switch (task.priority.toLowerCase()) {
       case 'high':
@@ -485,12 +486,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
         priorityColor = const Color(0xFFC48A2D);
         break;
       default:
-        priorityColor = const Color(0xFF4E7A51);
+        priorityColor = const Color(0xFF6B6862);
     }
 
     Color statusColor;
     String statusText;
     IconData leadingIcon;
+    final isCompleted = task.status == 'completed';
+
     switch (task.status.toLowerCase()) {
       case 'completed':
         statusColor = const Color(0xFF4E7A51);
@@ -508,15 +511,14 @@ class _TaskListScreenState extends State<TaskListScreen> {
         leadingIcon = Icons.radio_button_unchecked_rounded;
     }
 
-    final isCompleted = task.status == 'completed';
-
     return Dismissible(
       key: Key(task.id),
-      direction: DismissDirection.endToStart,
+      direction: (authProvider.role == 'mahasiswa')
+          ? DismissDirection.none
+          : DismissDirection.endToStart,
       background: Container(
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.only(right: 20.0),
         decoration: BoxDecoration(
           color: const Color(0xFFB3492F),
           borderRadius: BorderRadius.circular(12),
@@ -558,7 +560,39 @@ class _TaskListScreenState extends State<TaskListScreen> {
               fontWeight: FontWeight.w500,
             ),
           ),
-          subtitle: Text('${task.category} · ${task.xpReward} XP'),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 2),
+              Text('${task.category} · ${task.xpReward} XP'),
+              if (authProvider.role != 'mahasiswa' && task.studentUsername != null) ...[
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC15F3C).withAlpha(30),
+                    borderRadius: BorderRadius.circular(4),
+                    border: Border.all(color: const Color(0xFFC15F3C), width: 0.5),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.person, size: 10, color: Color(0xFFC15F3C)),
+                      const SizedBox(width: 4),
+                      Text(
+                        'Student: @${task.studentUsername}',
+                        style: const TextStyle(
+                          color: Color(0xFFC15F3C),
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
           trailing: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.center,

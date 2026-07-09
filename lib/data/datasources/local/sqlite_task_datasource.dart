@@ -20,8 +20,8 @@ class SqliteTaskDatasource {
     final db = await _sqliteHelper.database;
     final List<Map<String, dynamic>> maps = await db.query(
       SqliteHelper.tableTasks,
-      where: 'user_id = ?',
-      whereArgs: [userId],
+      where: 'user_id = ? OR assignments LIKE ?',
+      whereArgs: [userId, '%"student_id":"$userId"%'],
       orderBy: 'created_at DESC',
     );
 

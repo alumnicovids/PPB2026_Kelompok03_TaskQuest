@@ -217,7 +217,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       await Provider.of<TaskProvider>(
         context,
         listen: false,
-      ).rejectQuest(task.id);
+      ).rejectQuest(task.id, task.userId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(

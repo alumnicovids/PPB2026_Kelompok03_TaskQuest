@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class SqliteHelper {
   static const String _databaseName = 'taskquest.db';
-  static const int _databaseVersion = 3;
+  static const int _databaseVersion = 4;
 
   // Table Names
   static const String tableTasks = 'tasks';
@@ -51,7 +51,8 @@ class SqliteHelper {
         proof_photo_path TEXT,
         completed_at TEXT,
         created_at TEXT NOT NULL,
-        is_synced INTEGER NOT NULL DEFAULT 0
+        is_synced INTEGER NOT NULL DEFAULT 0,
+        assignments TEXT
       )
     ''');
 
@@ -91,6 +92,11 @@ class SqliteHelper {
     if (oldVersion < 3) {
       await db.execute(
         'ALTER TABLE $tableStudyLocations ADD COLUMN is_synced INTEGER NOT NULL DEFAULT 0',
+      );
+    }
+    if (oldVersion < 4) {
+      await db.execute(
+        'ALTER TABLE $tableTasks ADD COLUMN assignments TEXT',
       );
     }
   }

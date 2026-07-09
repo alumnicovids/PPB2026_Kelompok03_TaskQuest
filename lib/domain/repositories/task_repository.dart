@@ -10,5 +10,5 @@ abstract class TaskRepository {
   Future<List<Task>> getAllTasks();
   Future<List<Task>> getSubmittedTasks();
   Future<void> approveTask(String taskId, String studentUserId, int xpReward);
-  Future<void> rejectTask(String taskId);
+  Future<void> rejectTask(String taskId, String studentUserId);
 }
