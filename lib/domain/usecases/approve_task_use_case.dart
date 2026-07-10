@@ -24,16 +24,12 @@ class ApproveTaskUseCase {
   final LevelUpUseCase _levelUpUseCase;
 
   ApproveTaskUseCase({
-    required TaskRepository taskRepository,
-    required CharacterRepository characterRepository,
-    required XpLogRepository xpLogRepository,
-    required CalculateXpUseCase calculateXpUseCase,
-    required LevelUpUseCase levelUpUseCase,
-  }) : _taskRepository = taskRepository,
-       _characterRepository = characterRepository,
-       _xpLogRepository = xpLogRepository,
-       _calculateXpUseCase = calculateXpUseCase,
-       _levelUpUseCase = levelUpUseCase;
+    required this._taskRepository,
+    required this._characterRepository,
+    required this._xpLogRepository,
+    required this._calculateXpUseCase,
+    required this._levelUpUseCase,
+  });
 
   Future<void> execute(ApproveTaskParams params) async {
     // 1. Fetch task
@@ -89,22 +85,18 @@ class ApproveTaskUseCase {
     }
 
     // 5. Fetch student character and update level/XP
-    var character = await _characterRepository.getCharacter(
-      params.studentUserId,
-    );
-    if (character == null) {
-      // Create a default character if none exists
-      character = Character(
-        id: const Uuid().v4(),
-        userId: params.studentUserId,
-        classType: 'knight',
-        level: 1,
-        currentXp: 0,
-        xpToNextLevel: 100,
-        appearanceStage: 1,
-        updatedAt: DateTime.now(),
-      );
-    }
+    final character =
+        await _characterRepository.getCharacter(params.studentUserId) ??
+        Character(
+          id: const Uuid().v4(),
+          userId: params.studentUserId,
+          classType: 'knight',
+          level: 1,
+          currentXp: 0,
+          xpToNextLevel: 100,
+          appearanceStage: 1,
+          updatedAt: DateTime.now(),
+        );
 
     final levelUpResult = _levelUpUseCase.execute(
       LevelUpParams(

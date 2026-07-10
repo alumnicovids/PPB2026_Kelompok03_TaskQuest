@@ -14,13 +14,13 @@ import 'package:taskquest/presentation/providers/task_provider.dart';
 import 'package:taskquest/presentation/providers/character_provider.dart';
 import 'package:taskquest/domain/usecases/calculate_xp_use_case.dart';
 import 'package:taskquest/domain/usecases/level_up_use_case.dart';
+import 'package:taskquest/domain/usecases/approve_task_use_case.dart';
 import 'package:taskquest/domain/entities/task.dart';
 import 'package:taskquest/domain/entities/user_entity.dart';
 import 'package:taskquest/domain/entities/character.dart';
 import 'package:taskquest/domain/entities/study_location.dart';
 import 'package:taskquest/domain/entities/xp_log.dart';
 import 'package:taskquest/domain/repositories/xp_log_repository.dart';
-
 
 class FakeTaskRepository implements TaskRepository {
   @override
@@ -40,11 +40,7 @@ class FakeTaskRepository implements TaskRepository {
   @override
   Future<List<Task>> getSubmittedTasks() async => [];
   @override
-  Future<void> approveTask(
-    String taskId,
-    String studentUserId,
-    int xpReward,
-  ) async {}
+  Future<void> approveTask(String taskId, String studentUserId) async {}
   @override
   Future<void> rejectTask(String taskId, String studentUserId) async {}
 }
@@ -118,9 +114,9 @@ class FakeXpLogRepository implements XpLogRepository {
 class FakeQuotesRepository implements QuotesRepository {
   @override
   Future<Map<String, String>> getRandomQuote() async => {
-        'quote': 'Do not watch the clock; do what it does. Keep going.',
-        'author': 'Sam Levenson',
-      };
+    'quote': 'Do not watch the clock; do what it does. Keep going.',
+    'author': 'Sam Levenson',
+  };
 }
 
 void main() {
@@ -138,6 +134,13 @@ void main() {
     final xpLogRepo = FakeXpLogRepository();
     final quotesRepo = FakeQuotesRepository();
     final getRandomQuoteUseCase = GetRandomQuoteUseCase(quotesRepo);
+    final approveTaskUseCase = ApproveTaskUseCase(
+      taskRepository: taskRepo,
+      characterRepository: charRepo,
+      xpLogRepository: xpLogRepo,
+      calculateXpUseCase: CalculateXpUseCase(),
+      levelUpUseCase: LevelUpUseCase(),
+    );
 
     await tester.pumpWidget(
       MultiProvider(
@@ -150,7 +153,9 @@ void main() {
           Provider<GetRandomQuoteUseCase>.value(value: getRandomQuoteUseCase),
           ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
           ChangeNotifierProvider(create: (_) => AuthProvider(authRepo)),
-          ChangeNotifierProvider(create: (_) => TaskProvider(taskRepo)),
+          ChangeNotifierProvider(
+            create: (_) => TaskProvider(taskRepo, approveTaskUseCase),
+          ),
           ChangeNotifierProvider(
             create: (_) => CharacterProvider(
               CharacterProviderParams(

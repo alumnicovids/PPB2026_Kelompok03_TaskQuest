@@ -516,7 +516,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  _quote?['quote'] ?? 'A hero is forged through action, not intention.',
+                                  _quote?['quote'] ??
+                                      'A hero is forged through action, not intention.',
                                   style: const TextStyle(
                                     fontFamily: 'Inter',
                                     fontStyle: FontStyle.italic,

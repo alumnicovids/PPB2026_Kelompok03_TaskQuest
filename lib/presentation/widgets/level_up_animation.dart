@@ -80,9 +80,10 @@ class LevelUpAnimationWidgetState extends State<LevelUpAnimationWidget>
     );
 
     // Center medallion scale
-    _scaleAnim = Tween<double>(begin: 0.1, end: 1.2).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.elasticOut),
-    );
+    _scaleAnim = Tween<double>(
+      begin: 0.1,
+      end: 1.2,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.elasticOut));
 
     // Overall fade out at end
     _fadeAnim = Tween<double>(begin: 1.0, end: 0.0).animate(
@@ -101,12 +102,14 @@ class LevelUpAnimationWidgetState extends State<LevelUpAnimationWidget>
     );
 
     // Gold ring expanding outward
-    _ringScaleAnim = Tween<double>(begin: 0.0, end: 2.5).animate(
-      CurvedAnimation(parent: _ringController, curve: Curves.easeOut),
-    );
-    _ringOpacityAnim = Tween<double>(begin: 0.8, end: 0.0).animate(
-      CurvedAnimation(parent: _ringController, curve: Curves.easeOut),
-    );
+    _ringScaleAnim = Tween<double>(
+      begin: 0.0,
+      end: 2.5,
+    ).animate(CurvedAnimation(parent: _ringController, curve: Curves.easeOut));
+    _ringOpacityAnim = Tween<double>(
+      begin: 0.8,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _ringController, curve: Curves.easeOut));
 
     _spawnParticles();
     _controller.forward();
@@ -160,7 +163,11 @@ class LevelUpAnimationWidgetState extends State<LevelUpAnimationWidget>
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: Listenable.merge([_controller, _textController, _ringController]),
+      animation: Listenable.merge([
+        _controller,
+        _textController,
+        _ringController,
+      ]),
       builder: (context, _) {
         for (final p in _particles) {
           p.position = Offset(
@@ -174,9 +181,7 @@ class LevelUpAnimationWidgetState extends State<LevelUpAnimationWidget>
           child: Stack(
             children: [
               // Dark overlay
-              Container(
-                color: AppColors.dungeonBlack.withAlpha(210),
-              ),
+              Container(color: AppColors.dungeonBlack.withAlpha(210)),
 
               // Gold particle canvas
               CustomPaint(
@@ -240,8 +245,9 @@ class LevelUpAnimationWidgetState extends State<LevelUpAnimationWidget>
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         ShaderMask(
-                          shaderCallback: (bounds) =>
-                              AppColors.goldShimmerGradient.createShader(bounds),
+                          shaderCallback: (bounds) => AppColors
+                              .goldShimmerGradient
+                              .createShader(bounds),
                           child: const Icon(
                             Icons.star_rounded,
                             color: Colors.white,
@@ -250,8 +256,9 @@ class LevelUpAnimationWidgetState extends State<LevelUpAnimationWidget>
                         ),
                         const SizedBox(height: 6),
                         ShaderMask(
-                          shaderCallback: (bounds) =>
-                              AppColors.goldShimmerGradient.createShader(bounds),
+                          shaderCallback: (bounds) => AppColors
+                              .goldShimmerGradient
+                              .createShader(bounds),
                           child: const Text(
                             'LEVEL UP!',
                             style: TextStyle(

@@ -31,10 +31,7 @@ class _LoginScreenState extends State<LoginScreen>
       vsync: this,
       duration: const Duration(milliseconds: 800),
     );
-    _fadeAnim = CurvedAnimation(
-      parent: _fadeController,
-      curve: Curves.easeIn,
-    );
+    _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeIn);
     _fadeController.forward();
   }
 
@@ -155,17 +152,16 @@ class _LoginScreenState extends State<LoginScreen>
                           AppColors.goldShimmerGradient.createShader(bounds),
                       child: Text(
                         'TaskQuest',
-                        style: Theme.of(
-                          context,
-                        ).textTheme.displayLarge?.copyWith(
-                          color: Colors.white,
-                          shadows: [
-                            const Shadow(
-                              color: AppColors.burnishedGold,
-                              blurRadius: 12,
+                        style: Theme.of(context).textTheme.displayLarge
+                            ?.copyWith(
+                              color: Colors.white,
+                              shadows: [
+                                const Shadow(
+                                  color: AppColors.burnishedGold,
+                                  blurRadius: 12,
+                                ),
+                              ],
                             ),
-                          ],
-                        ),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -187,9 +183,7 @@ class _LoginScreenState extends State<LoginScreen>
                     // ── Form Card ───────────────────────────────────────
                     Container(
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.darkStone
-                            : AppColors.vellum,
+                        color: isDark ? AppColors.darkStone : AppColors.vellum,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: isDark
@@ -214,12 +208,11 @@ class _LoginScreenState extends State<LoginScreen>
                           // ── Title ─────────────────────────────────────
                           Text(
                             _isRegisterMode ? 'Join the Guild' : 'Enter Gate',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.displaySmall?.copyWith(
-                              color: AppColors.ancientGold,
-                              fontSize: 18,
-                            ),
+                            style: Theme.of(context).textTheme.displaySmall
+                                ?.copyWith(
+                                  color: AppColors.ancientGold,
+                                  fontSize: 18,
+                                ),
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 4),

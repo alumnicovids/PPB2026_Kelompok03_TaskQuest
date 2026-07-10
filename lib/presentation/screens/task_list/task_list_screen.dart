@@ -32,13 +32,17 @@ class _TaskListScreenState extends State<TaskListScreen> {
       final role = authProvider.role;
       if (role == 'mahasiswa') {
         Provider.of<TaskProvider>(context, listen: false).loadTasks(userId);
-        Provider.of<TaskProvider>(context, listen: false)
-            .syncTasks(userId, role: role);
+        Provider.of<TaskProvider>(
+          context,
+          listen: false,
+        ).syncTasks(userId, role: role);
       } else {
         Provider.of<TaskProvider>(context, listen: false).loadAllTasks();
         authProvider.loadUsersByRole('mahasiswa');
-        Provider.of<TaskProvider>(context, listen: false)
-            .syncTasks(userId, role: role);
+        Provider.of<TaskProvider>(
+          context,
+          listen: false,
+        ).syncTasks(userId, role: role);
       }
     }
   }
@@ -128,9 +132,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
                           ],
                           onChanged: isSubmitting
                               ? null
-                              : (v) => setBottomState(
-                                    () => selectedStudent = v!,
-                                  ),
+                              : (v) =>
+                                    setBottomState(() => selectedStudent = v!),
                         ),
                         const SizedBox(height: 12),
                         if (students.isEmpty)
@@ -191,9 +194,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         ],
                         onChanged: isSubmitting
                             ? null
-                            : (v) => setBottomState(
-                                  () => selectedCategory = v!,
-                                ),
+                            : (v) =>
+                                  setBottomState(() => selectedCategory = v!),
                       ),
                       const SizedBox(height: 12),
 
@@ -219,9 +221,8 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         ],
                         onChanged: isSubmitting
                             ? null
-                            : (v) => setBottomState(
-                                  () => selectedPriority = v!,
-                                ),
+                            : (v) =>
+                                  setBottomState(() => selectedPriority = v!),
                       ),
                       const SizedBox(height: 12),
 
@@ -274,10 +275,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                         )
                       else
                         ElevatedButton.icon(
-                          icon: const Text(
-                            '⚔',
-                            style: TextStyle(fontSize: 16),
-                          ),
+                          icon: const Text('⚔', style: TextStyle(fontSize: 16)),
                           label: const Text('Add Quest'),
                           onPressed: () async {
                             final title = titleController.text.trim();
@@ -409,15 +407,15 @@ class _TaskListScreenState extends State<TaskListScreen> {
                   color: isSelected
                       ? AppColors.dungeonBlack
                       : Theme.of(context).textTheme.bodyMedium?.color,
-                  fontWeight:
-                      isSelected ? FontWeight.w700 : FontWeight.normal,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
                   fontSize: 12,
                   fontFamily: 'Inter',
                 ),
               ),
               selected: isSelected,
               selectedColor: AppColors.ancientGold,
-              backgroundColor: Theme.of(context).cardTheme.color ??
+              backgroundColor:
+                  Theme.of(context).cardTheme.color ??
                   Theme.of(context).colorScheme.surface,
               side: BorderSide(
                 color: isSelected
@@ -515,8 +513,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
                 ),
               ],
             ),
-      floatingActionButton:
-          (userId == null || authProvider.role == 'mahasiswa')
+      floatingActionButton: (userId == null || authProvider.role == 'mahasiswa')
           ? null
           : FloatingActionButton(
               onPressed: () => _showAddTaskDialog(context, userId),
@@ -689,7 +686,11 @@ class _TaskListScreenState extends State<TaskListScreen> {
                             color: statusColor.withAlpha(30),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Icon(leadingIcon, color: statusColor, size: 20),
+                          child: Icon(
+                            leadingIcon,
+                            color: statusColor,
+                            size: 20,
+                          ),
                         ),
                         const SizedBox(width: 10),
                         // Title + meta
@@ -836,7 +837,9 @@ class _TaskListScreenState extends State<TaskListScreen> {
                             // Status badge
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 7, vertical: 3),
+                                horizontal: 7,
+                                vertical: 3,
+                              ),
                               decoration: BoxDecoration(
                                 color: statusColor.withAlpha(25),
                                 borderRadius: BorderRadius.circular(4),

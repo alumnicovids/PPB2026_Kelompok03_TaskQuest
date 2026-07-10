@@ -124,12 +124,16 @@ class TaskRepositoryImpl implements TaskRepository {
       final unsyncedTasks = await _sqliteTaskDatasource.getUnsyncedTasks();
       debugPrint('Found ${unsyncedTasks.length} unsynced local tasks');
       for (final task in unsyncedTasks) {
-        debugPrint('Syncing local task to remote: ${task.id}, title: ${task.title}');
+        debugPrint(
+          'Syncing local task to remote: ${task.id}, title: ${task.title}',
+        );
         await _syncSingleTaskToRemote(task);
       }
 
       final remoteTasksData = await _supabaseRemoteDatasource.getTasks(userId);
-      debugPrint('Retrieved ${remoteTasksData.length} tasks from remote Supabase');
+      debugPrint(
+        'Retrieved ${remoteTasksData.length} tasks from remote Supabase',
+      );
       for (final data in remoteTasksData) {
         final remoteTask = TaskModel.fromMap(data).copyWith(isSynced: true);
         debugPrint(
@@ -239,7 +243,9 @@ class TaskRepositoryImpl implements TaskRepository {
           'Task assignment status updated to completed for student: $studentUserId',
         );
       } else {
-        debugPrint('WARNING: No assignment found for studentId: $studentUserId');
+        debugPrint(
+          'WARNING: No assignment found for studentId: $studentUserId',
+        );
       }
     } else {
       final existingCompletedAt = task.completedAt;

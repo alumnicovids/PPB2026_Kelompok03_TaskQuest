@@ -62,6 +62,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       final updatedTask = task.copyWith(
         status: 'submitted',
         proofPhotoPath: _localPhotoPath ?? task.proofPhotoPath,
+        completedAt: DateTime.now(),
       );
 
       // 1. Update task in TaskProvider
@@ -212,7 +213,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       await Provider.of<TaskProvider>(
         context,
         listen: false,
-      ).approveQuest(task.id, task.userId, task.xpReward);
+      ).approveQuest(task.id, task.userId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -331,7 +332,6 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
       }
     }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -603,7 +603,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                                 onPressed: _isProcessing
                                     ? null
                                     : () => _undoSubmission(task),
-                                icon: const Icon(Icons.undo, color: Color(0xFFC48A2D)),
+                                icon: const Icon(
+                                  Icons.undo,
+                                  color: Color(0xFFC48A2D),
+                                ),
                                 label: const Text(
                                   'Undo Submission',
                                   style: TextStyle(color: Color(0xFFC48A2D)),

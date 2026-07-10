@@ -11,14 +11,14 @@ void main() {
   group('CalculateXpUseCase Tests', () {
     final deadline = DateTime(2026, 7, 5, 23, 59);
 
-    test('low priority, completed > 3 days before deadline (1.0x)', () {
+    test('low priority, completed > 3 days before deadline (1.5x)', () {
       final completedAt = DateTime(2026, 7, 1);
       final xp = useCase.execute(
         priority: 'low',
         deadline: deadline,
         completedAt: completedAt,
       );
-      expect(xp, equals(10));
+      expect(xp, equals(15));
     });
 
     test('medium priority, completed 2 days before deadline (1.2x)', () {

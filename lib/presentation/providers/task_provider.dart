@@ -109,7 +109,9 @@ class TaskProvider with ChangeNotifier {
       if (role == 'mahasiswa' &&
           task.assignments != null &&
           task.assignments!.isNotEmpty) {
-        throw Exception('Mahasiswa cannot delete tasks assigned by a lecturer.');
+        throw Exception(
+          'Mahasiswa cannot delete tasks assigned by a lecturer.',
+        );
       }
     }
     _isLoading = true;
@@ -175,7 +177,9 @@ class TaskProvider with ChangeNotifier {
       } else {
         _tasks = await _taskRepository.getAllTasks();
       }
-      debugPrint('Provider sync successful. Total tasks loaded: ${_tasks.length}');
+      debugPrint(
+        'Provider sync successful. Total tasks loaded: ${_tasks.length}',
+      );
     } catch (e, stack) {
       debugPrint('TaskProvider syncTasks error: $e');
       debugPrint(stack.toString());

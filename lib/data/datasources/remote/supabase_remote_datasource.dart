@@ -60,7 +60,9 @@ class SupabaseRemoteDatasource {
     final List<Map<String, dynamic>> allTasks = List<Map<String, dynamic>>.from(
       response,
     );
-    debugPrint('RemoteDatasource.getTasks total remote tasks: ${allTasks.length}');
+    debugPrint(
+      'RemoteDatasource.getTasks total remote tasks: ${allTasks.length}',
+    );
 
     final filtered = allTasks.where((task) {
       if (task['user_id'] == userId) return true;
@@ -85,7 +87,9 @@ class SupabaseRemoteDatasource {
       }
       return false;
     }).toList();
-    debugPrint('RemoteDatasource.getTasks total filtered tasks: ${filtered.length}');
+    debugPrint(
+      'RemoteDatasource.getTasks total filtered tasks: ${filtered.length}',
+    );
     return filtered;
   }
 

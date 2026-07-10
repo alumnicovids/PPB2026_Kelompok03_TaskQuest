@@ -23,11 +23,11 @@ class CharacterProvider with ChangeNotifier {
   int? _pendingLevelUpLevel;
 
   CharacterProvider(CharacterProviderParams params)
-      : _calculateXpUseCase = params.calculateXpUseCase,
-        _levelUpUseCase = params.levelUpUseCase,
-        _characterRepository = params.characterRepository,
-        _xpLogRepository = params.xpLogRepository,
-        _sharedPreferences = params.sharedPreferences;
+    : _calculateXpUseCase = params.calculateXpUseCase,
+      _levelUpUseCase = params.levelUpUseCase,
+      _characterRepository = params.characterRepository,
+      _xpLogRepository = params.xpLogRepository,
+      _sharedPreferences = params.sharedPreferences;
 
   Character? get character => _character;
   List<Character> get allCharacters => _allCharacters;

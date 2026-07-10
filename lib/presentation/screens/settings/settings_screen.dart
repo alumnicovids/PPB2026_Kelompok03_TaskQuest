@@ -84,9 +84,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Section: Profile Settings
             Text(
               'Profile Settings',
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: primaryColor,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.displaySmall?.copyWith(color: primaryColor),
             ),
             const SizedBox(height: 16),
             Card(
@@ -137,9 +137,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Section: Appearance (Theme)
             Text(
               'Appearance',
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: primaryColor,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.displaySmall?.copyWith(color: primaryColor),
             ),
             const SizedBox(height: 16),
             Card(
@@ -162,7 +162,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     Divider(height: 1, color: Theme.of(context).dividerColor),
                     RadioListTile<ThemeMode>(
                       title: const Text('Light Mode'),
-                      subtitle: const Text('Parchment by day — classic RPG scroll'),
+                      subtitle: const Text(
+                        'Parchment by day — classic RPG scroll',
+                      ),
                       value: ThemeMode.light,
                       groupValue: themeProvider.themeMode,
                       activeColor: primaryColor,
@@ -192,9 +194,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // Section: Account Info / Role Info
             Text(
               'Account Information',
-              style: Theme.of(context).textTheme.displaySmall?.copyWith(
-                color: primaryColor,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.displaySmall?.copyWith(color: primaryColor),
             ),
             const SizedBox(height: 16),
             Card(

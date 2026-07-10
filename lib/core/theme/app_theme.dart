@@ -107,9 +107,7 @@ class AppTheme {
           foregroundColor: AppColors.dungeonBlack,
           elevation: 2,
           shadowColor: AppColors.burnishedGold,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
           textStyle: const TextStyle(
             fontFamily: 'Inter',
@@ -137,9 +135,7 @@ class AppTheme {
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.fadedInk,
           side: const BorderSide(color: AppColors.agedBorder, width: 1),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
           textStyle: const TextStyle(
             fontFamily: 'Inter',
@@ -379,9 +375,7 @@ class AppTheme {
           backgroundColor: AppColors.burnishedGold,
           foregroundColor: AppColors.darkInk,
           elevation: 2,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(6),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 13),
           textStyle: const TextStyle(
             fontFamily: 'Inter',

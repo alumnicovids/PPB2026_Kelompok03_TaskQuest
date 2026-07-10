@@ -35,7 +35,7 @@ class CalculateXpUseCase {
       );
       final daysDifference = deadlineDate.difference(completionDate).inDays;
 
-      if (daysDifference == 0) {
+      if (daysDifference == 0 || daysDifference > 3) {
         multiplier = 1.5;
       } else if (daysDifference >= 1 && daysDifference <= 3) {
         multiplier = 1.2;

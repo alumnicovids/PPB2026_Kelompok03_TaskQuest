@@ -35,7 +35,7 @@ class _LecturerDashboardBodyState extends State<LecturerDashboardBody> {
     setState(() => _isProcessing = true);
     try {
       final taskProvider = Provider.of<TaskProvider>(context, listen: false);
-      await taskProvider.approveQuest(task.id, task.userId, task.xpReward);
+      await taskProvider.approveQuest(task.id, task.userId);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
