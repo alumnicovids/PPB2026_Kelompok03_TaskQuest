@@ -271,7 +271,7 @@ PPB2026_Kelompok03_TaskQuest/
 |---------|--------|-----------|
 | Laporan Project | PDF | `PPB2026_Kelompok03_Laporan.pdf` |
 | Installer Aplikasi | APK | `PPB2026_Kelompok03.apk` |
-| Link Repository | URL | *(link GitHub ini)* |
+| Link Repository | URL | *(https://github.com/alumnicovids/PPB2026_Kelompok03_TaskQuest.git)* |
 
 ---
 
