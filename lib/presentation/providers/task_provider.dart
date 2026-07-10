@@ -138,7 +138,7 @@ class TaskProvider with ChangeNotifier {
             t.userId.toLowerCase() == studentUserId.toLowerCase(),
       );
     } catch (e) {
-      print('approveQuest error: $e');
+      debugPrint('approveQuest error: $e');
       rethrow;
     } finally {
       _isLoading = false;
@@ -157,7 +157,7 @@ class TaskProvider with ChangeNotifier {
             t.userId.toLowerCase() == studentUserId.toLowerCase(),
       );
     } catch (e) {
-      print('rejectQuest error: $e');
+      debugPrint('rejectQuest error: $e');
       rethrow;
     } finally {
       _isLoading = false;
@@ -175,10 +175,10 @@ class TaskProvider with ChangeNotifier {
       } else {
         _tasks = await _taskRepository.getAllTasks();
       }
-      print('Provider sync successful. Total tasks loaded: ${_tasks.length}');
+      debugPrint('Provider sync successful. Total tasks loaded: ${_tasks.length}');
     } catch (e, stack) {
-      print('TaskProvider syncTasks error: $e');
-      print(stack);
+      debugPrint('TaskProvider syncTasks error: $e');
+      debugPrint(stack.toString());
     } finally {
       _isLoading = false;
       notifyListeners();

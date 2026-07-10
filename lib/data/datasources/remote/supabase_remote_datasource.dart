@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class SupabaseRemoteDatasource {
@@ -51,7 +52,7 @@ class SupabaseRemoteDatasource {
 
   // === Tasks CRUD ===
   Future<List<Map<String, dynamic>>> getTasks(String userId) async {
-    print('RemoteDatasource.getTasks called for userId: $userId');
+    debugPrint('RemoteDatasource.getTasks called for userId: $userId');
     final response = await _supabaseClient
         .from('tasks')
         .select('*, users(username)')
@@ -59,7 +60,7 @@ class SupabaseRemoteDatasource {
     final List<Map<String, dynamic>> allTasks = List<Map<String, dynamic>>.from(
       response,
     );
-    print('RemoteDatasource.getTasks total remote tasks: ${allTasks.length}');
+    debugPrint('RemoteDatasource.getTasks total remote tasks: ${allTasks.length}');
 
     final filtered = allTasks.where((task) {
       if (task['user_id'] == userId) return true;
@@ -84,7 +85,7 @@ class SupabaseRemoteDatasource {
       }
       return false;
     }).toList();
-    print('RemoteDatasource.getTasks total filtered tasks: ${filtered.length}');
+    debugPrint('RemoteDatasource.getTasks total filtered tasks: ${filtered.length}');
     return filtered;
   }
 
