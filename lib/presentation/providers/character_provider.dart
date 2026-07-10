@@ -22,13 +22,12 @@ class CharacterProvider with ChangeNotifier {
   bool _isLoading = false;
   int? _pendingLevelUpLevel;
 
-  CharacterProvider(
-    this._calculateXpUseCase,
-    this._levelUpUseCase,
-    this._characterRepository,
-    this._xpLogRepository,
-    this._sharedPreferences,
-  );
+  CharacterProvider(CharacterProviderParams params)
+      : _calculateXpUseCase = params.calculateXpUseCase,
+        _levelUpUseCase = params.levelUpUseCase,
+        _characterRepository = params.characterRepository,
+        _xpLogRepository = params.xpLogRepository,
+        _sharedPreferences = params.sharedPreferences;
 
   Character? get character => _character;
   List<Character> get allCharacters => _allCharacters;
@@ -98,11 +97,11 @@ class CharacterProvider with ChangeNotifier {
       final lastAckKey = 'last_ack_level_$userId';
       await _sharedPreferences.setInt(lastAckKey, 1);
 
-      print(
+      debugPrint(
         'Initial character created: classType=$classType for userId=$userId',
       );
     } catch (e) {
-      print('ERROR creating initial character: $e');
+      debugPrint('ERROR creating initial character: $e');
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -209,4 +208,20 @@ class CharacterProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+}
+
+class CharacterProviderParams {
+  final CalculateXpUseCase calculateXpUseCase;
+  final LevelUpUseCase levelUpUseCase;
+  final CharacterRepository characterRepository;
+  final XpLogRepository xpLogRepository;
+  final SharedPreferences sharedPreferences;
+
+  const CharacterProviderParams({
+    required this.calculateXpUseCase,
+    required this.levelUpUseCase,
+    required this.characterRepository,
+    required this.xpLogRepository,
+    required this.sharedPreferences,
+  });
 }

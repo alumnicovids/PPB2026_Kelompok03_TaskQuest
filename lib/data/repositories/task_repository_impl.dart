@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/repositories/task_repository.dart';
@@ -11,10 +12,12 @@ import '../models/task_model.dart';
 class TaskRepositoryImpl implements TaskRepository {
   final SqliteTaskDatasource _sqliteTaskDatasource;
   final SupabaseRemoteDatasource _supabaseRemoteDatasource;
+  final LevelUpUseCase _levelUpUseCase;
 
   TaskRepositoryImpl(
     this._sqliteTaskDatasource,
     this._supabaseRemoteDatasource,
+    this._levelUpUseCase,
   );
 
   @override
@@ -122,30 +125,30 @@ class TaskRepositoryImpl implements TaskRepository {
   @override
   Future<void> syncTasks(String userId) async {
     try {
-      print('=== STARTING SYNC FOR USER: $userId ===');
+      debugPrint('=== STARTING SYNC FOR USER: $userId ===');
       final unsyncedTasks = await _sqliteTaskDatasource.getUnsyncedTasks();
-      print('Found ${unsyncedTasks.length} unsynced local tasks');
+      debugPrint('Found ${unsyncedTasks.length} unsynced local tasks');
       for (final task in unsyncedTasks) {
-        print('Syncing local task to remote: ${task.id}, title: ${task.title}');
+        debugPrint('Syncing local task to remote: ${task.id}, title: ${task.title}');
         await _syncSingleTaskToRemote(task);
       }
 
       final remoteTasksData = await _supabaseRemoteDatasource.getTasks(userId);
-      print('Retrieved ${remoteTasksData.length} tasks from remote Supabase');
+      debugPrint('Retrieved ${remoteTasksData.length} tasks from remote Supabase');
       for (final data in remoteTasksData) {
         final remoteTask = TaskModel.fromMap(data).copyWith(isSynced: true);
-        print(
+        debugPrint(
           'Caching remote task to SQLite: ${remoteTask.id}, title: ${remoteTask.title}',
         );
         await _sqliteTaskDatasource.insertTask(
           TaskModel.fromEntity(remoteTask),
         );
       }
-      print('=== SYNC COMPLETED SUCCESSFULLY ===');
+      debugPrint('=== SYNC COMPLETED SUCCESSFULLY ===');
     } catch (e, stack) {
-      print('=== SYNC FAILED ===');
-      print('Error during sync: $e');
-      print('Stacktrace: $stack');
+      debugPrint('=== SYNC FAILED ===');
+      debugPrint('Error during sync: $e');
+      debugPrint('Stacktrace: $stack');
       rethrow;
     }
   }
@@ -210,7 +213,7 @@ class TaskRepositoryImpl implements TaskRepository {
     String studentUserId,
     int xpReward,
   ) async {
-    print(
+    debugPrint(
       '=== APPROVE TASK START: taskId=$taskId, studentId=$studentUserId, xpReward=$xpReward ===',
     );
 
@@ -237,11 +240,11 @@ class TaskRepositoryImpl implements TaskRepository {
         await _supabaseRemoteDatasource.upsertTask(
           TaskModel.fromEntity(updatedTask).toSupabaseMap(),
         );
-        print(
+        debugPrint(
           'Task assignment status updated to completed for student: $studentUserId',
         );
       } else {
-        print('WARNING: No assignment found for studentId: $studentUserId');
+        debugPrint('WARNING: No assignment found for studentId: $studentUserId');
       }
     } else {
       await _supabaseRemoteDatasource.updateTaskStatus(
@@ -249,21 +252,21 @@ class TaskRepositoryImpl implements TaskRepository {
         'completed',
         DateTime.now().toIso8601String(),
       );
-      print('Task status updated to completed (no assignments)');
+      debugPrint('Task status updated to completed (no assignments)');
     }
 
     // 2. Fetch student character and update level/XP
-    print('Fetching character for studentId: $studentUserId');
+    debugPrint('Fetching character for studentId: $studentUserId');
     var charData = await _supabaseRemoteDatasource.getCharacterByUserId(
       studentUserId,
     );
-    print(
+    debugPrint(
       'Character data found: ${charData != null ? 'YES (level=${charData['level']}, xp=${charData['current_xp']})' : 'NULL'}',
     );
 
     if (charData == null) {
       // Character not found - create a default one so XP can be added
-      print('Character not found, creating default character for student');
+      debugPrint('Character not found, creating default character for student');
       final newCharId = const Uuid().v4();
       final defaultChar = {
         'id': newCharId,
@@ -277,9 +280,9 @@ class TaskRepositoryImpl implements TaskRepository {
       };
       try {
         await _supabaseRemoteDatasource.upsertCharacter(defaultChar);
-        print('Default character created successfully');
+        debugPrint('Default character created successfully');
       } catch (e) {
-        print('ERROR creating default character: $e');
+        debugPrint('ERROR creating default character: $e');
         rethrow;
       }
       charData = defaultChar;
@@ -288,11 +291,11 @@ class TaskRepositoryImpl implements TaskRepository {
     final currentLevel = charData['level'] as int? ?? 1;
     final currentXp = charData['current_xp'] as int? ?? 0;
 
-    print(
+    debugPrint(
       'Before XP update: level=$currentLevel, currentXp=$currentXp, xpReward=$xpReward',
     );
 
-    final levelUpResult = LevelUpUseCase().execute(
+    final levelUpResult = _levelUpUseCase.execute(
       LevelUpParams(
         currentLevel: currentLevel,
         currentXp: currentXp,
@@ -309,11 +312,11 @@ class TaskRepositoryImpl implements TaskRepository {
     final xpToNext = (100 * pow(levelUpResult.newLevel, 1.3)).round();
     updatedChar['xp_to_next_level'] = xpToNext;
 
-    print(
+    debugPrint(
       'After XP update: newLevel=${levelUpResult.newLevel}, newXp=${levelUpResult.newXp}',
     );
     await _supabaseRemoteDatasource.upsertCharacter(updatedChar);
-    print('Character upserted successfully to Supabase');
+    debugPrint('Character upserted successfully to Supabase');
 
     // 3. Log XP gain
     final xpLogId = const Uuid().v4();
@@ -326,7 +329,7 @@ class TaskRepositoryImpl implements TaskRepository {
       'created_at': DateTime.now().toIso8601String(),
     };
     await _supabaseRemoteDatasource.insertXpLog(xpLogData);
-    print('=== APPROVE TASK COMPLETE ===');
+    debugPrint('=== APPROVE TASK COMPLETE ===');
   }
 
   @override

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/utils/gyroscope_service.dart';
-import '../../../data/datasources/remote/quotes_datasource.dart';
+import '../../../domain/usecases/get_random_quote_use_case.dart';
 import '../../../core/utils/character_asset_helper.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../providers/auth_provider.dart';
@@ -107,11 +107,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _isLoadingQuote = true;
     });
     try {
-      final quotesDatasource = Provider.of<QuotesDatasource>(
+      final getRandomQuoteUseCase = Provider.of<GetRandomQuoteUseCase>(
         context,
         listen: false,
       );
-      final quote = await quotesDatasource.getRandomQuote();
+      final quote = await getRandomQuoteUseCase.execute();
       if (mounted) {
         setState(() {
           _quote = quote;

@@ -7,7 +7,8 @@ import 'package:taskquest/domain/repositories/task_repository.dart';
 import 'package:taskquest/domain/repositories/auth_repository.dart';
 import 'package:taskquest/domain/repositories/character_repository.dart';
 import 'package:taskquest/domain/repositories/location_repository.dart';
-import 'package:taskquest/data/datasources/remote/quotes_datasource.dart';
+import 'package:taskquest/domain/repositories/quotes_repository.dart';
+import 'package:taskquest/domain/usecases/get_random_quote_use_case.dart';
 import 'package:taskquest/presentation/providers/auth_provider.dart';
 import 'package:taskquest/presentation/providers/task_provider.dart';
 import 'package:taskquest/presentation/providers/character_provider.dart';
@@ -19,7 +20,7 @@ import 'package:taskquest/domain/entities/character.dart';
 import 'package:taskquest/domain/entities/study_location.dart';
 import 'package:taskquest/domain/entities/xp_log.dart';
 import 'package:taskquest/domain/repositories/xp_log_repository.dart';
-import 'package:http/http.dart' as http;
+
 
 class FakeTaskRepository implements TaskRepository {
   @override
@@ -114,6 +115,14 @@ class FakeXpLogRepository implements XpLogRepository {
   Future<void> syncXpLogs(String userId) async {}
 }
 
+class FakeQuotesRepository implements QuotesRepository {
+  @override
+  Future<Map<String, String>> getRandomQuote() async => {
+        'quote': 'Do not watch the clock; do what it does. Keep going.',
+        'author': 'Sam Levenson',
+      };
+}
+
 void main() {
   testWidgets('App renders login screen initially', (
     WidgetTester tester,
@@ -127,7 +136,8 @@ void main() {
     final charRepo = FakeCharacterRepository();
     final locRepo = FakeLocationRepository();
     final xpLogRepo = FakeXpLogRepository();
-    final quotesDS = QuotesDatasource(http.Client());
+    final quotesRepo = FakeQuotesRepository();
+    final getRandomQuoteUseCase = GetRandomQuoteUseCase(quotesRepo);
 
     await tester.pumpWidget(
       MultiProvider(
@@ -137,17 +147,19 @@ void main() {
           Provider<CharacterRepository>.value(value: charRepo),
           Provider<LocationRepository>.value(value: locRepo),
           Provider<XpLogRepository>.value(value: xpLogRepo),
-          Provider<QuotesDatasource>.value(value: quotesDS),
+          Provider<GetRandomQuoteUseCase>.value(value: getRandomQuoteUseCase),
           ChangeNotifierProvider<ThemeProvider>.value(value: themeProvider),
           ChangeNotifierProvider(create: (_) => AuthProvider(authRepo)),
           ChangeNotifierProvider(create: (_) => TaskProvider(taskRepo)),
           ChangeNotifierProvider(
             create: (_) => CharacterProvider(
-              CalculateXpUseCase(),
-              LevelUpUseCase(),
-              charRepo,
-              xpLogRepo,
-              sharedPrefs,
+              CharacterProviderParams(
+                calculateXpUseCase: CalculateXpUseCase(),
+                levelUpUseCase: LevelUpUseCase(),
+                characterRepository: charRepo,
+                xpLogRepository: xpLogRepo,
+                sharedPreferences: sharedPrefs,
+              ),
             ),
           ),
         ],
@@ -158,6 +170,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('TaskQuest'), findsOneWidget);
-    expect(find.text('Login'), findsOneWidget);
+    expect(find.text('Enter Gate'), findsOneWidget);
   });
 }

@@ -23,6 +23,8 @@ import 'domain/repositories/character_repository.dart';
 import 'domain/repositories/location_repository.dart';
 import 'domain/repositories/xp_log_repository.dart';
 import 'domain/usecases/calculate_xp_use_case.dart';
+import 'data/repositories/quotes_repository_impl.dart';
+import 'domain/usecases/get_random_quote_use_case.dart';
 import 'domain/usecases/level_up_use_case.dart';
 import 'presentation/navigation/app_router.dart';
 import 'presentation/providers/auth_provider.dart';
@@ -70,9 +72,13 @@ void main() async {
     resolvedSupabaseClient,
   );
 
+  final calculateXpUseCase = CalculateXpUseCase();
+  final levelUpUseCase = LevelUpUseCase();
+
   final taskRepository = TaskRepositoryImpl(
     sqliteTaskDatasource,
     supabaseRemoteDatasource,
+    levelUpUseCase,
   );
 
   final authRepository = AuthRepositoryImpl(
@@ -95,8 +101,8 @@ void main() async {
     supabaseRemoteDatasource,
   );
 
-  final calculateXpUseCase = CalculateXpUseCase();
-  final levelUpUseCase = LevelUpUseCase();
+  final quotesRepository = QuotesRepositoryImpl(quotesDatasource);
+  final getRandomQuoteUseCase = GetRandomQuoteUseCase(quotesRepository);
 
   runApp(
     MultiProvider(
@@ -106,17 +112,19 @@ void main() async {
         Provider<CharacterRepository>.value(value: characterRepository),
         Provider<LocationRepository>.value(value: locationRepository),
         Provider<XpLogRepository>.value(value: xpLogRepository),
-        Provider<QuotesDatasource>.value(value: quotesDatasource),
+        Provider<GetRandomQuoteUseCase>.value(value: getRandomQuoteUseCase),
         ChangeNotifierProvider(create: (_) => ThemeProvider(sharedPreferences)),
         ChangeNotifierProvider(create: (_) => AuthProvider(authRepository)),
         ChangeNotifierProvider(create: (_) => TaskProvider(taskRepository)),
         ChangeNotifierProvider(
           create: (_) => CharacterProvider(
-            calculateXpUseCase,
-            levelUpUseCase,
-            characterRepository,
-            xpLogRepository,
-            sharedPreferences,
+            CharacterProviderParams(
+              calculateXpUseCase: calculateXpUseCase,
+              levelUpUseCase: levelUpUseCase,
+              characterRepository: characterRepository,
+              xpLogRepository: xpLogRepository,
+              sharedPreferences: sharedPreferences,
+            ),
           ),
         ),
       ],
