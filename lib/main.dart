@@ -22,6 +22,7 @@ import 'domain/repositories/auth_repository.dart';
 import 'domain/repositories/character_repository.dart';
 import 'domain/repositories/location_repository.dart';
 import 'domain/repositories/xp_log_repository.dart';
+import 'domain/usecases/approve_task_use_case.dart';
 import 'domain/usecases/calculate_xp_use_case.dart';
 import 'data/repositories/quotes_repository_impl.dart';
 import 'domain/usecases/get_random_quote_use_case.dart';
@@ -78,7 +79,6 @@ void main() async {
   final taskRepository = TaskRepositoryImpl(
     sqliteTaskDatasource,
     supabaseRemoteDatasource,
-    levelUpUseCase,
   );
 
   final authRepository = AuthRepositoryImpl(
@@ -104,6 +104,14 @@ void main() async {
   final quotesRepository = QuotesRepositoryImpl(quotesDatasource);
   final getRandomQuoteUseCase = GetRandomQuoteUseCase(quotesRepository);
 
+  final approveTaskUseCase = ApproveTaskUseCase(
+    taskRepository: taskRepository,
+    characterRepository: characterRepository,
+    xpLogRepository: xpLogRepository,
+    calculateXpUseCase: calculateXpUseCase,
+    levelUpUseCase: levelUpUseCase,
+  );
+
   runApp(
     MultiProvider(
       providers: [
@@ -115,7 +123,9 @@ void main() async {
         Provider<GetRandomQuoteUseCase>.value(value: getRandomQuoteUseCase),
         ChangeNotifierProvider(create: (_) => ThemeProvider(sharedPreferences)),
         ChangeNotifierProvider(create: (_) => AuthProvider(authRepository)),
-        ChangeNotifierProvider(create: (_) => TaskProvider(taskRepository)),
+        ChangeNotifierProvider(
+          create: (_) => TaskProvider(taskRepository, approveTaskUseCase),
+        ),
         ChangeNotifierProvider(
           create: (_) => CharacterProvider(
             CharacterProviderParams(

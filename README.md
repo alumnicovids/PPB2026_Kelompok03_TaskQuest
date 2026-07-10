@@ -27,7 +27,7 @@
 | Nama | NIM | Tanggung Jawab |
 |------|-----|----------------|
 | I Gusti Ngurah Agung Pradnaya Asmara Kusuma | *(240040043)* | Backend, CRUD SQLite, Supabase Cloud, Kamera, OpenStreetMap, API Service, Auth & Session |
-| Orang B (Raditya) | *(NIM)* | UI/UX, Navigasi, State Management (Provider), Gamification (XP/Level), Sensor Gyroscope/Compass |
+| Putu Raditya Dharma Putra | *(240040015)* | UI/UX, Navigasi, State Management (Provider), Gamification (XP/Level), Sensor Gyroscope/Compass |
 
 ---
 
@@ -260,8 +260,8 @@ PPB2026_Kelompok03_TaskQuest/
 
 | Nama | NIM | Tanggung Jawab Detail |
 |------|-----|-----------------------|
-| **Orang A** | *(NIM)* | Data Layer (SQLite + Supabase), autentikasi & session, CRUD task datasource, integrasi kamera, OpenStreetMap & lokasi, API quotes motivasi, schema database, sinkronisasi offline↔cloud |
-| **Orang B (Raditya)** | *(NIM)* | Presentation Layer (semua halaman UI), navigasi go_router, state management Provider, gamification use case (CalculateXpUseCase, LevelUpUseCase), animasi level-up, integrasi sensor Gyroscope/Compass, design system & theming |
+| **I Gusti Ngurah Agung Pradnaya Asmara Kusuma (Asmara_Kusuma)** | *(240040043)* | **Arsitektur & Database**: Setup Clean Architecture, skema local SQLite, remote Supabase schema & migrations, RLS policies.<br>**Data & Sync Layer**: Offline-first repository (Task, XP Log, Study Location), sinkronisasi data local↔cloud, storage bucket setup untuk bukti foto.<br>**Fitur Spesifik**: Integrasi kamera, OpenStreetMap (Geolocator), API quotes motivasi.<br>**Role-Based Access Control (RBAC)**: Fitur Dosen & SuperAdmin (dashboard conditional rendering, admin panel, kelola avatar cloud, kelola data mahasiswa), pendistribusian quest 1-to-N.<br>**Refactoring & Maintenance**: Clean architecture refactoring untuk API quotes & level up, bug fixing sinkronisasi & session, pembersihan database lokal saat logout. |
+| **Putu Raditya Dharma Putra (radtadharma)** | *(240040015)* | **Presentation Layer (UI/UX)**: Implementasi & redesain halaman utama/widget dengan tema Medieval RPG, integrasi Google Fonts & medieval design system, display custom cloud avatars.<br>**Navigation & State**: Setup routing dengan go_router, implementasi state management (TaskProvider & CharacterProvider), integrasi UI screen dengan provider & repository.<br>**Gamification & Sensors**: Logika core gamifikasi (CalculateXpUseCase, LevelUpUseCase), integrasi sensor Gyroscope/Accelerometer untuk animasi level-up partikel interaktif.<br>**Documentation & Polishing**: Penyusunan dokumentasi awal README.md, formatting kode dengan Dart format, bug fixing UI & settings screen. |
 
 ---
 

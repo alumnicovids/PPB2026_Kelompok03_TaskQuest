@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../domain/entities/task.dart';
 import '../../domain/repositories/task_repository.dart';
+import '../../domain/usecases/approve_task_use_case.dart';
 
 class TaskProvider with ChangeNotifier {
   final TaskRepository _taskRepository;
+  final ApproveTaskUseCase _approveTaskUseCase;
   List<Task> _tasks = [];
   List<Task> _submittedTasks = [];
   bool _isLoading = false;
 
-  TaskProvider(this._taskRepository);
+  TaskProvider(this._taskRepository, this._approveTaskUseCase);
 
   List<Task> get tasks => _tasks;
   List<Task> get submittedTasks => _submittedTasks;
@@ -123,15 +125,13 @@ class TaskProvider with ChangeNotifier {
     }
   }
 
-  Future<void> approveQuest(
-    String taskId,
-    String studentUserId,
-    int xpReward,
-  ) async {
+  Future<void> approveQuest(String taskId, String studentUserId) async {
     _isLoading = true;
     Future.microtask(notifyListeners);
     try {
-      await _taskRepository.approveTask(taskId, studentUserId, xpReward);
+      await _approveTaskUseCase.execute(
+        ApproveTaskParams(taskId: taskId, studentUserId: studentUserId),
+      );
       _submittedTasks.removeWhere(
         (t) =>
             t.id == taskId &&
