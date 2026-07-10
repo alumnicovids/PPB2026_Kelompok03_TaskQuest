@@ -644,7 +644,7 @@ class _TaskListScreenState extends State<TaskListScreen> {
           ),
         );
       },
-      onDismissed: (_) => provider.deleteTask(task.id),
+      onDismissed: (_) => provider.deleteTask(task.id, role: authProvider.role),
       child: Card(
         margin: const EdgeInsets.only(bottom: 10),
         clipBehavior: Clip.antiAlias,

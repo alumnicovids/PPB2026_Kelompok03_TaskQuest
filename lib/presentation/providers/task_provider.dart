@@ -100,7 +100,16 @@ class TaskProvider with ChangeNotifier {
     }
   }
 
-  Future<void> deleteTask(String taskId) async {
+  Future<void> deleteTask(String taskId, {String? role}) async {
+    final taskIndex = _tasks.indexWhere((t) => t.id == taskId);
+    if (taskIndex != -1) {
+      final task = _tasks[taskIndex];
+      if (role == 'mahasiswa' &&
+          task.assignments != null &&
+          task.assignments!.isNotEmpty) {
+        throw Exception('Mahasiswa cannot delete tasks assigned by a lecturer.');
+      }
+    }
     _isLoading = true;
     notifyListeners();
     try {

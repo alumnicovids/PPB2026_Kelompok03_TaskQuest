@@ -119,8 +119,32 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
 
   Future<void> _deleteQuest() async {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final taskProvider = Provider.of<TaskProvider>(context, listen: false);
     final isDosenOrAdmin =
         authProvider.role == 'dosen' || authProvider.role == 'superadmin';
+
+    // Retrieve the task
+    final taskIndex = taskProvider.tasks.indexWhere(
+      (t) =>
+          t.id == widget.taskId &&
+          (widget.studentUserId == null || t.userId == widget.studentUserId),
+    );
+    if (taskIndex != -1) {
+      final task = taskProvider.tasks[taskIndex];
+      if (authProvider.role == 'mahasiswa' &&
+          task.assignments != null &&
+          task.assignments!.isNotEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Cannot delete tasks assigned by a lecturer.'),
+              backgroundColor: Color(0xFFB3492F),
+            ),
+          );
+        }
+        return;
+      }
+    }
 
     final confirmed = await showDialog<bool>(
       context: context,
@@ -155,7 +179,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
         await Provider.of<TaskProvider>(
           context,
           listen: false,
-        ).deleteTask(widget.taskId);
+        ).deleteTask(widget.taskId, role: authProvider.role);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -242,6 +266,73 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
     }
   }
 
+  Future<void> _undoSubmission(Task task) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Undo Submission?'),
+        content: const Text(
+          'Revert this quest to In Progress? Your proof photo will be removed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFC48A2D),
+            ),
+            child: const Text('Undo'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && mounted) {
+      setState(() {
+        _isProcessing = true;
+      });
+      try {
+        final updatedTask = task.copyWith(
+          status: 'pending',
+          proofPhotoPath: null,
+          completedAt: null,
+        );
+
+        await Provider.of<TaskProvider>(
+          context,
+          listen: false,
+        ).updateTask(updatedTask);
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Submission undone. Quest is now In Progress.'),
+            ),
+          );
+          setState(() {
+            _localPhotoPath = null;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Failed to undo submission: $e')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() {
+            _isProcessing = false;
+          });
+        }
+      }
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -290,7 +381,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
           onPressed: () => context.go('/tasks'),
         ),
         actions: [
-          if (!isCompleted)
+          if (!isCompleted &&
+              (authProvider.role != 'mahasiswa' ||
+                  task.assignments == null ||
+                  task.assignments!.isEmpty))
             IconButton(
               icon: const Icon(Icons.delete_outline, color: Color(0xFFB3492F)),
               onPressed: _isProcessing ? null : _deleteQuest,
@@ -474,32 +568,53 @@ class _TaskDetailScreenState extends State<TaskDetailScreen> {
                     )
                   else if (task.status == 'submitted')
                     authProvider.role == 'mahasiswa'
-                        ? Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFC48A2D).withAlpha(30),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: const Color(0xFFC48A2D),
-                              ),
-                            ),
-                            child: const Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.hourglass_empty_rounded,
-                                  color: Color(0xFFC48A2D),
-                                ),
-                                SizedBox(width: 8),
-                                Text(
-                                  'Quest Submitted! Waiting for approval.',
-                                  style: TextStyle(
-                                    color: Color(0xFFC48A2D),
-                                    fontWeight: FontWeight.bold,
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFC48A2D).withAlpha(30),
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(
+                                    color: const Color(0xFFC48A2D),
                                   ),
                                 ),
-                              ],
-                            ),
+                                child: const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.hourglass_empty_rounded,
+                                      color: Color(0xFFC48A2D),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      'Quest Submitted! Waiting for approval.',
+                                      style: TextStyle(
+                                        color: Color(0xFFC48A2D),
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              OutlinedButton.icon(
+                                onPressed: _isProcessing
+                                    ? null
+                                    : () => _undoSubmission(task),
+                                icon: const Icon(Icons.undo, color: Color(0xFFC48A2D)),
+                                label: const Text(
+                                  'Undo Submission',
+                                  style: TextStyle(color: Color(0xFFC48A2D)),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: Color(0xFFC48A2D),
+                                  ),
+                                ),
+                              ),
+                            ],
                           )
                         : Row(
                             children: [

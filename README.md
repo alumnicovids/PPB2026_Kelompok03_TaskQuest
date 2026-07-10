@@ -26,7 +26,7 @@
 
 | Nama | NIM | Tanggung Jawab |
 |------|-----|----------------|
-| Orang A | *(NIM)* | Backend, CRUD SQLite, Supabase Cloud, Kamera, OpenStreetMap, API Service, Auth & Session |
+| I Gusti Ngurah Agung Pradnaya Asmara Kusuma | *(240040043)* | Backend, CRUD SQLite, Supabase Cloud, Kamera, OpenStreetMap, API Service, Auth & Session |
 | Orang B (Raditya) | *(NIM)* | UI/UX, Navigasi, State Management (Provider), Gamification (XP/Level), Sensor Gyroscope/Compass |
 
 ---
@@ -289,7 +289,3 @@ chore(deps): tambah package sensors_plus untuk gyroscope
 ```
 
 ---
-
-<p align="center">
-  Dibuat dengan ❤️ oleh Kelompok 03 — PPB 2026
-</p>
